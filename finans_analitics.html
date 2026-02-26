@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Аналитика Светульки</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: var(--tg-theme-bg-color, #f0f2f5);
+            --accent: #ff758c;
+            --accent-2: #ff7eb3;
+            --dark: var(--tg-theme-text-color, #2d3436);
+            --glass: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.9));
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --grad: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            --info-blue: var(--tg-theme-link-color, #457b9d);
+            --hint: var(--tg-theme-hint-color, #888);
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            color: var(--dark);
+            margin: 0; padding: 15px;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { font-weight: 700; font-size: 1.6rem; letter-spacing: -0.5px; margin: 10px 0; color: var(--dark); }
+
+        #mainMenu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .menu-card {
+            background: var(--glass);
+            padding: 25px 15px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(128,128,128,0.1);
+        }
+        .menu-card:active { transform: scale(0.92); }
+        .menu-card i { font-size: 2.2rem; display: block; margin-bottom: 12px; }
+        .menu-card span { font-size: 0.9rem; font-weight: 700; color: var(--dark); }
+
+        .nav-row { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 20px; gap: 15px; }
+        .back-btn { 
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 18px; border: 1.5px solid rgba(128,128,128,0.15); 
+            background: var(--glass); color: var(--dark); font-weight: 700; font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); cursor: pointer;
+        }
+        .page-title { font-weight: 700; font-size: 0.9rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .close-app-btn {
+            width: 100%;
+            background: var(--glass);
+            border: 1px solid rgba(128,128,128,0.1);
+            padding: 18px 0;
+            border-radius: 20px;
+            font-weight: 700;
+            color: var(--hint);
+            margin-top: auto;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 1px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        .close-app-btn:active { background: rgba(128,128,128,0.1); transform: scale(0.98); }
+
+        .report-page { display: none; animation: fadeIn 0.4s ease; flex: 1; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .filter-box {
+            background: var(--glass); padding: 20px; border-radius: 24px;
+            margin-bottom: 20px; box-shadow: var(--card-shadow);
+        }
+
+        .quick-filters { display: flex; gap: 6px; margin-top: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .q-btn { 
+            background: var(--bg); border: 1px solid rgba(128,128,128,0.2); padding: 6px 10px; 
+            border-radius: 10px; font-size: 0.7rem; font-weight: 600; color: var(--dark);
+        }
+
+        .date-row { display: flex; gap: 10px; margin-top: 12px; }
+        input[type="date"] {
+            flex: 1; padding: 12px; border: 1px solid rgba(128,128,128,0.2); border-radius: 12px; 
+            font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--dark);
+        }
+        .apply-btn {
+            width: 100%; background: var(--grad); color: white; border: none;
+            padding: 15px; border-radius: 16px; margin-top: 15px; font-weight: 700;
+            box-shadow: 0 6px 20px rgba(255, 117, 140, 0.3);
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .stat-row {
+            display: flex; justify-content: space-between; padding: 12px;
+            background: var(--glass); margin-bottom: 8px; border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .val { font-weight: 600; color: var(--info-blue); }
+        .label { font-size: 0.9rem; }
+        .progress-bar { height: 8px; background: rgba(128,128,128,0.1); border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; background: #a8dadc; }
+
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .sum-card { 
+            background: var(--glass); padding: 15px; border-radius: 20px; 
+            box-shadow: var(--card-shadow); border-left: 4px solid var(--accent);
+        }
+        .sum-card.full { grid-column: 1/3; background: var(--grad); color: white; border: none; }
+        .sum-val { font-size: 1.3rem; font-weight: 700; display: block; }
+        .sum-label { font-size: 0.75rem; font-weight: 500; opacity: 0.9; }
+        .chart-container { background: var(--glass); padding: 15px; border-radius: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow); height: 220px; }
+        .transaction-item {
+            background: var(--glass); padding: 15px; border-radius: 18px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid rgba(128,128,128,0.1);
+        }
+        .tx-info .tx-name { font-weight: 700; font-size: 0.95rem; display: block; margin-bottom: 2px; }
+        .tx-info .tx-date { font-size: 0.75rem; color: var(--hint); }
+        .tx-amount { font-weight: 700; color: #2ecc71; font-size: 1.1rem; }
+
+        .total-summary {
+            background: #1d3557; color: white; padding: 20px; border-radius: 24px; margin-top: 20px;
+        }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+        .total-row.big { font-size: 1.1rem; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 10px; }
+        .total-row.debt { font-size: 1.1rem; color: #ffb4b4; margin-bottom: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div id="mainMenu">
+        <div class="header" style="grid-column: 1/3;">
+            <h1>Аналитика Светульки</h1>
+        </div>
+        <div class="menu-card" onclick="showPage('fin_gen')"><i>💰</i><span>ФИНАНСЫ<br>ОБЩИЙ</span></div>
+        <div class="menu-card" onclick="showPage('fin_det')"><i>👥</i><span>ДЕБИТОРКА<br>КЛИЕНТЫ</span></div>
+        <div class="menu-card" onclick="showPage('fin_type')"><i>📈</i><span>АНАЛИЗ<br>УСЛУГ</span></div>
+        <div class="menu-card" onclick="showPage('fin_src')"><i>📢</i><span>ИСТОЧНИКИ<br>ТРАФИКА</span></div>
+        <div class="menu-card" onclick="showPage('fin_daily')"><i>📅</i><span>ПРИБЫЛЬ<br>ПО ДНЯМ</span></div>
+        <div class="menu-card" onclick="showPage('fin_monthly')"><i>📊</i><span>ПРИБЫЛЬ<br>ПО МЕСЯЦАМ</span></div>
+    </div>
+
+    <div id="fin_gen" class="report-page">
+        <div class="nav-row">
+            <button class="back-btn" onclick="showMain()">
+                <span style="font-size: 1.4rem;">‹</span> НАЗАД
+            </button>
+            <div class="page-title">ФИНАНСЫ ОБЩИЙ</div>
+        </div>
+        <div class="filter-box">
+            <span style="font-weight: 700;">Выбери период:</span>
+            <div class="quick-filters">
+                <div class="q-btn" onclick="setFastPeriod('gen', 0)">Сегодня</div>
+                <div class="q-btn" onclick="setFastPeriod('gen', 7)">7 дней</div>
+                <div class="q-btn" onclick="setFastPeriod('gen', 30)">Месяц</div>
+                <div class="q-btn" onclick="setFastPeriod('gen', 90)">Квартал</div>
+                <div class="q-btn" onclick="setFastPeriod('gen', 365)">Год</div>
+            </div>
+            <div class="date-row">
+                <input type="date" id="gen_start">
+                <input type="date" id="gen_end">
+            </div>
+            <button class="apply-btn" onclick="runGenReport()">ПОЛУЧИТЬ ОТЧЕТ</button>
+        </div>
+        <div id="res_gen"></div>
+    </div>
+
+    <div id="fin_det" class="report-page">
+        <div class="nav-row">
+            <button class="back-btn" onclick="showMain()">
+                <span style="font-size: 1.4rem;">‹</span> НАЗАД
+            </button>
+            <div class="page-title">ДЕБИТОРКА КЛИЕНТЫ</div>
+        </div>
+        <div class="filter-box">
+            <span>Период активности:</span>
+            <div class="quick-filters">
+                <div class="q-btn" onclick="setFastPeriod('det', 0)">Сегодня</div>
+                <div class="q-btn" onclick="setFastPeriod('det', 7)">7 дней</div>
+                <div class="q-btn" onclick="setFastPeriod('det', 30)">Месяц</div>
+                <div class="q-btn" onclick="setFastPeriod('det', 90)">Квартал</div>
+                <div class="q-btn" onclick="setFastPeriod('det', 365)">Год</div>
+            </div>
+            <div class="date-row">
+                <input type="date" id="det_start">
+                <input type="date" id="det_end">
+            </div>
+            <button class="apply-btn" onclick="runDetReport()">Показать клиентов</button>
+        </div>
+        <div id="res_det"></div>
+    </div>
+
+    <div id="fin_type" class="report-page">
+        <div class="nav-row">
+            <button class="back-btn" onclick="showMain()">
+                <span style="font-size: 1.4rem;">‹</span> НАЗАД
+            </button>
+            <div class="page-title">АНАЛИЗ УСЛУГ</div>
+        </div>
+        <div class="filter-box">
+            <span>Период:</span>
+            <div class="quick-filters">
+                <div class="q-btn" onclick="setFastPeriod('type', 0)">Сегодня</div>
+                <div class="q-btn" onclick="setFastPeriod('type', 7)">7 дней</div>
+                <div class="q-btn" onclick="setFastPeriod('type', 30)">Месяц</div>
+                <div class="q-btn" onclick="setFastPeriod('type', 90)">Квартал</div>
+                <div class="q-btn" onclick="setFastPeriod('type', 365)">Год</div>
+            </div>
+            <div class="date-row">
+                <input type="date" id="type_start">
+                <input type="date" id="type_end">
+            </div>
+            <button class="apply-btn" onclick="runTypeReport()">Анализ</button>
+        </div>
+        <div id="res_type"></div>
+    </div>
+
+    <div id="fin_src" class="report-page">
+        <div class="nav-row">
+            <button class="back-btn" onclick="showMain()">
+                <span style="font-size: 1.4rem;">‹</span> НАЗАД
+            </button>
+            <div class="page-title">ИСТОЧНИКИ ТРАФИКА</div>
+        </div>
+        <div class="filter-box">
+            <span>Период регистрации:</span>
+            <div class="quick-filters">
+                <div class="q-btn" onclick="setFastPeriod('src', 0)">Сегодня</div>
+                <div class="q-btn" onclick="setFastPeriod('src', 7)">7 дней</div>
+                <div class="q-btn" onclick="setFastPeriod('src', 30)">Месяц</div>
+                <div class="q-btn" onclick="setFastPeriod('src', 90)">Квартал</div>
+                <div class="q-btn" onclick="setFastPeriod('src', 365)">Год</div>
+            </div>
+            <div class="date-row">
+                <input type="date" id="src_start">
+                <input type="date" id="src_end">
+            </div>
+            <button class="apply-btn" onclick="runSrcReport()">Анализ</button>
+        </div>
+        <div id="res_src"></div>
+    </div>
+
+    <div id="fin_daily" class="report-page">
+        <div class="nav-row">
+            <button class="back-btn" onclick="showMain()">
+                <span style="font-size: 1.4rem;">‹</span> НАЗАД
+            </button>
+            <div class="page-title">ПРИБЫЛЬ ПО ДНЯМ</div>
+        </div>
+        <div class="filter-box">
+            <span style="font-weight: 700;">Выбери месяц и год:</span>
+            <div style="margin-top: 12px; display: flex; gap: 10px;">
+                <select id="daily_month" style="flex: 1; padding: 12px; border: 1px solid rgba(128,128,128,0.2); border-radius: 12px; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--dark);">
+                    <option value="0">Январь</option>
+                    <option value="1">Февраль</option>
+                    <option value="2">Март</option>
+                    <option value="3">Апрель</option>
+                    <option value="4">Май</option>
+                    <option value="5">Июнь</option>
+                    <option value="6">Июль</option>
+                    <option value="7">Август</option>
+                    <option value="8">Сентябрь</option>
+                    <option value="9">Октябрь</option>
+                    <option value="10">Ноябрь</option>
+                    <option value="11">Декабрь</option>
+                </select>
+                <select id="daily_year" style="flex: 1; padding: 12px; border: 1px solid rgba(128,128,128,0.2); border-radius: 12px; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--dark);">
+                </select>
+            </div>
+            <button class="apply-btn" onclick="runDailyReport()">ПОКАЗАТЬ ОТЧЕТ</button>
+        </div>
+        <div id="res_daily"></div>
+    </div>
+
+    <div id="fin_monthly" class="report-page">
+        <div class="nav-row">
+            <button class="back-btn" onclick="showMain()">
+                <span style="font-size: 1.4rem;">‹</span> НАЗАД
+            </button>
+            <div class="page-title">ПРИБЫЛЬ ПО МЕСЯЦАМ</div>
+        </div>
+        <div class="filter-box">
+            <span style="font-weight: 700;">Выбери год:</span>
+            <div style="margin-top: 12px;">
+                <select id="monthly_year" style="width: 100%; padding: 12px; border: 1px solid rgba(128,128,128,0.2); border-radius: 12px; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--dark);">
+                </select>
+            </div>
+            <button class="apply-btn" onclick="runMonthlyReport()">ПОКАЗАТЬ ОТЧЕТ</button>
+        </div>
+        <div id="res_monthly"></div>
+    </div>
+
+    <div class="close-app-btn" onclick="tg.close()">ЗАКРЫТЬ</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        let db = { payments: [], clients: [], visits: [] };
+        let myChart = null;
+
+        function impact(style = 'light') {
+            try { tg.HapticFeedback.impactOccurred(style); } catch(e) {}
+        }
+
+        function parseDate(dStr) {
+            if (!dStr) return new Date(0);
+            if (dStr instanceof Date) return dStr;
+            // Формат ISO (2026-02-23T...)
+            if (typeof dStr === 'string' && dStr.includes('T')) return new Date(dStr);
+            // Формат DD.MM.YYYY HH:MM
+            if (typeof dStr === 'string' && dStr.includes('.')) {
+                const parts = dStr.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const yearTime = parts[2].split(' ');
+                const year = parseInt(yearTime[0], 10);
+                if (yearTime[1]) {
+                    const time = yearTime[1].split(':');
+                    return new Date(year, month, day, parseInt(time[0]), parseInt(time[1]));
+                }
+                return new Date(year, month, day);
+            }
+            return new Date(dStr);
+        }
+
+        function setFastPeriod(prefix, days) {
+            impact('medium');
+            const end = new Date();
+            const start = new Date();
+            start.setDate(end.getDate() - days);
+            document.getElementById(prefix + '_start').value = start.toISOString().split('T')[0];
+            document.getElementById(prefix + '_end').value = end.toISOString().split('T')[0];
+        }
+
+        // Загрузка данных
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const raw = params.get('f_data');
+            if (raw) {
+                const binary = atob(raw.replace(/-/g, '+').replace(/_/g, '/'));
+                const charData = binary.split('').map(x => x.charCodeAt(0));
+                const decompressed = pako.inflate(new Uint8Array(charData), { to: 'string' });
+                db = JSON.parse(decompressed);
+            }
+        } catch (e) { console.error("Ошибка загрузки данных:", e); }
+
+        function showPage(id) {
+            impact('light');
+            document.getElementById('mainMenu').style.display = 'none';
+            document.querySelectorAll('.report-page').forEach(p => p.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function showMain() {
+            impact('light');
+            document.getElementById('mainMenu').style.display = 'grid';
+            document.querySelectorAll('.report-page').forEach(p => p.style.display = 'none');
+        }
+
+        function getDates(prefix) {
+            const startVal = document.getElementById(prefix + '_start').value;
+            const endVal = document.getElementById(prefix + '_end').value;
+            return {
+                s: new Date(startVal + 'T00:00:00'),
+                e: new Date(endVal + 'T23:59:59')
+            };
+        }
+
+        function runGenReport() {
+            impact('heavy');
+            const {s, e} = getDates('gen');
+            let total = 0, count = 0, dailyData = {};
+            
+            const filteredPayments = db.payments.filter(p => {
+                const d = parseDate(p.d);
+                return d >= s && d <= e;
+            }).sort((a, b) => parseDate(a.d) - parseDate(b.d));
+
+            const htmlList = filteredPayments.slice().reverse().map(p => {
+                const pDate = parseDate(p.d);
+                total += p.a; count++;
+                const dateKey = pDate.toLocaleDateString();
+                dailyData[dateKey] = (dailyData[dateKey] || 0) + p.a;
+                return `<div class="transaction-item"><div class="tx-info"><span class="tx-name">${p.n}</span><span class="tx-date">${pDate.toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}</span></div><div class="tx-amount">+ ${p.a.toLocaleString()} ₽</div></div>`;
+            }).join('');
+
+            const avg = count > 0 ? Math.round(total / count) : 0;
+            const debtors = db.clients.filter(c => ((c.c || 0) - (c.p || 0)) > 0);
+            const totalRemainingDebt = debtors.reduce((acc, c) => acc + ((c.c || 0) - (c.p || 0)), 0);
+            const totalContractsAllTime = db.clients.reduce((acc, c) => acc + (c.c || 0), 0);
+
+            const summaryHtml = `
+                <div class="summary-grid">
+                    <div class="sum-card full">
+                        <span class="sum-label">ВЫРУЧКА ЗА ПЕРИОД</span>
+                        <span class="sum-val">${total.toLocaleString()} ₽</span>
+                    </div>
+                    <div class="sum-card">
+                        <span class="sum-label">СРЕДНИЙ ЧЕК</span>
+                        <span class="sum-val">${avg.toLocaleString()} ₽</span>
+                    </div>
+                    <div class="sum-card">
+                        <span class="sum-label">ПЛАТЕЖЕЙ</span>
+                        <span class="sum-val">${count} шт.</span>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="finChart"></canvas>
+                </div>
+
+                <div class="total-summary" style="margin-bottom:20px; background: #2d3436;">
+                    <div style="font-weight:700; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; font-size:0.85rem">АНАЛИЗ ДОЛГОВ (ВСЕ ВРЕМЯ):</div>
+                    <div class="total-row"><span>Общий объем договоров:</span><span>${totalContractsAllTime.toLocaleString()} ₽</span></div>
+                    <div class="total-row debt" style="margin-bottom:0; color:#ff758c"><span>Текущая дебиторка:</span><span>${totalRemainingDebt.toLocaleString()} ₽</span></div>
+                </div>
+
+                <h3 style="font-size:1rem; margin:20px 0 10px 5px">История поступлений</h3>
+                ${htmlList || '<div style="text-align:center; padding:20px; color:#888">Оплат нет</div>'}
+            `;
+            
+            document.getElementById('res_gen').innerHTML = summaryHtml;
+
+            const ctx = document.getElementById('finChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            myChart = new Chart(ctx, { 
+                type: 'line', 
+                data: { 
+                    labels: Object.keys(dailyData), 
+                    datasets: [{ 
+                        label: 'Выручка', 
+                        data: Object.values(dailyData), 
+                        borderColor: '#ff758c', 
+                        backgroundColor: 'rgba(255, 117, 140, 0.1)', 
+                        fill: true, 
+                        tension: 0.4, 
+                        borderWidth: 3, 
+                        pointRadius: 4, 
+                        pointBackgroundColor: '#ff758c' 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        y: { beginAtZero: true, grid: { display: false }, ticks: { display: false } }, 
+                        x: { grid: { display: false }, ticks: { font: { size: 9 } } } 
+                    } 
+                } 
+            });
+        }
+
+        function runDetReport() {
+            impact('heavy');
+            const {s, e} = getDates('det');
+            let totalContract = 0, totalPaid = 0, totalDebt = 0;
+
+            const activeClientIds = [...new Set(db.visits
+                .filter(v => { const d = parseDate(v.d); return d >= s && d <= e; })
+                .map(v => v.i))];
+
+            const clientLastVisit = {};
+            db.visits.forEach(v => {
+                const d = parseDate(v.d);
+                if (!clientLastVisit[v.i] || d.getTime() > clientLastVisit[v.i].getTime()) {
+                    clientLastVisit[v.i] = d;
+                }
+            });
+
+            const filteredClients = db.clients
+                .filter(c => activeClientIds.includes(c.i))
+                .sort((a, b) => (clientLastVisit[b.i] || 0) - (clientLastVisit[a.i] || 0));
+
+            const html = filteredClients.map(c => {
+                const debt = (c.c || 0) - (c.p || 0); 
+                totalContract += (c.c || 0);
+                totalPaid += (c.p || 0);
+                totalDebt += debt; 
+                const lastDate = clientLastVisit[c.i] ? clientLastVisit[c.i].toLocaleDateString('ru') : '---';
+
+                return `
+                <div class="stat-row" style="flex-direction:column">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <span class="label"><b>${c.n}</b></span>
+                        <span style="font-weight: 800; color: var(--info-blue); font-size: 1.35rem; text-align: right;">${(c.p || 0).toLocaleString()} ₽</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px">
+                        <div style="font-size:0.85rem; color:var(--dark); opacity:0.8;">Договор: ${(c.c || 0).toLocaleString()} ₽</div>
+                        <div style="font-size:0.7rem; color:var(--hint);">Посл. сеанс: ${lastDate}</div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; font-size:0.95rem; margin-top:8px; font-weight:700;">
+                        <span style="color:${debt > 0 ? '#e63946' : '#2a9d8f'}">Долг: ${debt.toLocaleString()} ₽</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${(c.c > 0 ? (c.p/c.c)*100 : 0)}%"></div></div>
+                </div>`;
+            }).join('');
+
+            const finalSummary = `
+                <div class="total-summary">
+                    <div style="font-weight:700; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:10px; opacity:0.8">ИТОГИ ПО ВЫБРАННЫМ:</div>
+                    <div class="total-row"><span>Объем договоров:</span><span>${totalContract.toLocaleString()} ₽</span></div>
+                    <div class="total-row debt"><span>Общий долг:</span><span>${totalDebt.toLocaleString()} ₽</span></div>
+                    <div class="total-row big"><span>ВСЕГО ОПЛАЧЕНО:</span><span>${totalPaid.toLocaleString()} ₽</span></div>
+                </div>
+            `;
+            document.getElementById('res_det').innerHTML = (html || '<div style="text-align:center; padding:20px">За этот период сеансов не было</div>') + (html ? finalSummary : '');
+        }
+
+        function runTypeReport() { 
+            impact('heavy');
+            const {s, e} = getDates('type'); 
+            const stats = {}; 
+            db.visits.forEach(v => { 
+                const d = parseDate(v.d); 
+                if (d >= s && d <= e) { 
+                    const type = v.s ? v.s.split(' ')[0] : 'Неизвестно'; 
+                    stats[type] = (stats[type] || 0) + 1; 
+                } 
+            }); 
+            const html = Object.entries(stats)
+                .sort((a, b) => b[1] - a[1])
+                .map(([k, v]) => `<div class="stat-row"><span class="label">${k}</span><span class="val">${v} шт.</span></div>`).join(''); 
+            document.getElementById('res_type').innerHTML = html || 'Нет данных'; 
+        }
+
+        function runSrcReport() { 
+            impact('heavy');
+            const {s, e} = getDates('src');
+            const stats = {}; 
+            db.clients.forEach(c => { 
+                const d = parseDate(c.d);
+                if (d >= s && d <= e) {
+                    const src = c.s || 'Не указано'; 
+                    stats[src] = (stats[src] || 0) + 1; 
+                } 
+            }); 
+            const html = Object.entries(stats)
+                .sort((a, b) => b[1] - a[1])
+                .map(([k, v]) => `<div class="stat-row"><span class="label">${k}</span><span class="val">${v} чел.</span></div>`).join(''); 
+            document.getElementById('res_src').innerHTML = html || 'За этот период новых клиентов нет'; 
+        }
+
+        function runDailyReport() {
+            impact('heavy');
+            const month = parseInt(document.getElementById('daily_month').value);
+            const year = parseInt(document.getElementById('daily_year').value);
+            
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const dailyStats = {};
+            let totalMonth = 0;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                dailyStats[day] = 0;
+            }
+
+            db.payments.forEach(p => {
+                const d = parseDate(p.d);
+                if (d.getFullYear() === year && d.getMonth() === month) {
+                    const day = d.getDate();
+                    dailyStats[day] += p.a;
+                    totalMonth += p.a;
+                }
+            });
+
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            
+            const html = Object.entries(dailyStats)
+                .filter(([day, amount]) => amount > 0)
+                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                .map(([day, amount]) => {
+                    const date = new Date(year, month, parseInt(day));
+                    const dayName = date.toLocaleDateString('ru', { weekday: 'short' });
+                    return `
+                    <div class="stat-row" style="flex-direction:column; padding:15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="label" style="font-size:1rem;"><b>${day} ${monthNames[month]}</b> <span style="font-size:0.75rem; color:var(--hint); margin-left:8px;">${dayName}</span></span>
+                            <span style="font-weight: 800; color: #2ecc71; font-size: 1.3rem;">${amount.toLocaleString()} ₽</span>
+                        </div>
+                    </div>`;
+                }).join('');
+
+            const summaryHtml = `
+                <div class="summary-grid">
+                    <div class="sum-card full">
+                        <span class="sum-label">ИТОГО ЗА ${monthNames[month].toUpperCase()} ${year}</span>
+                        <span class="sum-val">${totalMonth.toLocaleString()} ₽</span>
+                    </div>
+                </div>
+                ${html || '<div style="text-align:center; padding:20px; color:#888">За этот месяц оплат не было</div>'}
+            `;
+
+            document.getElementById('res_daily').innerHTML = summaryHtml;
+        }
+
+        function runMonthlyReport() {
+            impact('heavy');
+            const year = parseInt(document.getElementById('monthly_year').value);
+            
+            const monthlyStats = {};
+            let totalYear = 0;
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+            for (let m = 0; m < 12; m++) {
+                monthlyStats[m] = 0;
+            }
+
+            db.payments.forEach(p => {
+                const d = parseDate(p.d);
+                if (d.getFullYear() === year) {
+                    const month = d.getMonth();
+                    monthlyStats[month] += p.a;
+                    totalYear += p.a;
+                }
+            });
+
+            const html = Object.entries(monthlyStats)
+                .filter(([month, amount]) => amount > 0)
+                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                .map(([month, amount]) => {
+                    return `
+                    <div class="stat-row" style="flex-direction:column; padding:15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="label" style="font-size:1rem;"><b>${monthNames[parseInt(month)]}</b></span>
+                            <span style="font-weight: 800; color: #2ecc71; font-size: 1.3rem;">${amount.toLocaleString()} ₽</span>
+                        </div>
+                    </div>`;
+                }).join('');
+
+            const summaryHtml = `
+                <div class="summary-grid">
+                    <div class="sum-card full">
+                        <span class="sum-label">ИТОГО ЗА ${year} ГОД</span>
+                        <span class="sum-val">${totalYear.toLocaleString()} ₽</span>
+                    </div>
+                </div>
+                ${html || '<div style="text-align:center; padding:20px; color:#888">За этот год оплат не было</div>'}
+            `;
+
+            document.getElementById('res_monthly').innerHTML = summaryHtml;
+        }
+
+        // Инициализация дат
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        ['gen','det','type','src'].forEach(p => { 
+            document.getElementById(p+'_start').value = monthAgo; 
+            document.getElementById(p+'_end').value = todayStr; 
+        });
+
+        // Инициализация селекторов для новых отчетов
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        
+        // Заполнение годов (последние 5 лет)
+        const yearSelects = [document.getElementById('daily_year'), document.getElementById('monthly_year')];
+        yearSelects.forEach(select => {
+            for (let y = currentYear; y >= currentYear - 4; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                select.appendChild(opt);
+            }
+        });
+
+        // Установка текущего месяца и года
+        document.getElementById('daily_month').value = currentMonth;
+        document.getElementById('daily_year').value = currentYear;
+        document.getElementById('monthly_year').value = currentYear;
+    </script>
+</body>
+</html>

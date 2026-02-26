@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Svetlana Massage — Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { 
+            --bg-color: #fcf1f1; 
+            --accent-pink: #f2bac9; 
+            --text-dark: #4a4444; 
+            --input-border: #f0e2e2; 
+            --white: #ffffff; 
+            --input-bg: #ffffff;
+            --label-color: #5b4d42;
+            --card-shadow: 0 10px 30px rgba(224, 159, 176, 0.2);
+        }
+        
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; min-height: 100vh; color: var(--text-dark); }
+        .brand-header { text-align: center; font-family: 'Caveat', cursive; font-size: 2.2rem; color: #e09fb0; margin-bottom: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
+        .card { background: var(--white); border-radius: 30px; padding: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(242, 186, 201, 0.3); }
+        .grid-services { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        
+        .service-btn { 
+            background: var(--input-bg); 
+            border: 2px solid var(--input-border); 
+            color: var(--text-dark);
+            padding: 16px 5px; border-radius: 18px; text-align: center; font-weight: 800; cursor: pointer; transition: all 0.2s ease; 
+        }
+        .service-btn.active { background: var(--accent-pink); color: white; border-color: var(--accent-pink); box-shadow: 0 4px 12px rgba(242, 186, 201, 0.4); }
+        
+        .child-section { background: rgba(242, 186, 201, 0.05); padding: 18px; border-radius: 22px; margin-bottom: 18px; border: 2px dashed var(--accent-pink); }
+        .input-group { margin-bottom: 18px; }
+        
+        label { display: block; margin-bottom: 8px; font-weight: 800; color: var(--label-color); font-size: 0.95rem; }
+        
+        input, textarea, select { 
+            width: 100%; padding: 16px; 
+            border: 2px solid var(--input-border); 
+            border-radius: 16px; font-size: 1rem; box-sizing: border-box; outline: none; 
+            background: var(--input-bg); color: var(--text-dark); transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent-pink); }
+        
+        .main-button { background-color: #5b4d42; color: white; border: none; padding: 22px; border-radius: 20px; width: 100%; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 6px 15px rgba(91, 77, 66, 0.2); text-transform: uppercase; letter-spacing: 0.5px; }
+        .shved-footer { text-align: center; margin-top: 25px; color: #d6abb6; font-size: 0.85rem; font-style: italic; }
+        .main-button:active { transform: scale(0.97); opacity: 0.9; }
+        
+        .calendar-link { 
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            text-decoration: none; background: var(--input-bg); border: 2px solid #aec6cf; 
+            padding: 14px; border-radius: 18px; color: #72909a; font-weight: 800; 
+            margin-bottom: 18px; transition: all 0.2s ease; 
+        }
+        .calendar-link:active { transform: scale(0.98); background: rgba(174, 198, 207, 0.1); }
+
+        input::-webkit-calendar-picker-indicator {
+            filter: grayscale(1) opacity(0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="brand-header">Света детский массаж</div>
+    <div class="card">
+        <div class="grid-services">
+            <div class="service-btn" onclick="select(this)">Курс</div>
+            <div class="service-btn" onclick="select(this)">Консультация</div>
+            <div class="service-btn" onclick="select(this)">Взрослый</div>
+            <div class="service-btn active" onclick="select(this)">Детский</div>
+        </div>
+        <div class="input-group"><label>Телефон</label><input type="tel" id="phone" placeholder="+79001112233" maxlength="12"></div>
+        <div class="input-group"><label id="p_label">Имя родителя</label><input type="text" id="p_name" placeholder="Введите имя"></div>
+        <div id="child_block" class="child-section">
+            <div class="input-group"><label>Имя ребенка</label><input type="text" id="c_name" placeholder="Как зовут?"></div>
+            <div class="input-group" style="margin:0;"><label>Возраст</label><input type="text" id="c_age" placeholder="пример: 6 месяцев"></div>
+        </div>
+        <div class="input-group"><label>Адрес</label><input type="text" id="addr" placeholder="Город, улица, дом"></div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px;">
+            <div>
+                <label>Подъезд</label>
+                <input type="text" id="entrance" placeholder="№" style="margin-bottom: 0;">
+            </div>
+            <div>
+                <label>Этаж</label>
+                <input type="text" id="floor" placeholder="№" style="margin-bottom: 0;">
+            </div>
+            <div>
+                <label>Домофон</label>
+                <input type="text" id="intercom" placeholder="Код" style="margin-bottom: 0;">
+            </div>
+        </div>
+        
+        <div class="input-group"><label>Заметка к адресу</label><input type="text" id="addr_comment" placeholder="Например: зеленая дверь"></div>
+        
+        <div class="input-group">
+            <label>Откуда узнали?</label>
+            <select id="source">
+                <option value="Не указано">-- Выберите --</option>
+                <option value="Сарафанное радио">Сарафанное радио</option>
+                <option value="Инстаграм">Инстаграм</option>
+                <option value="ВК">ВК</option>
+                <option value="Телеграм">Телеграм</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Стоимость одного сеанса (план)</label>
+            <input type="number" id="contract_sum" placeholder="Например: 2000" inputmode="numeric">
+        </div>
+
+        <a href="https://calendar.google.com/calendar/r/day" target="_blank" class="calendar-link">
+            <span>📅 Открыть Google Календарь</span>
+        </a>
+
+        <div class="input-group"><label>Дата и время</label><input type="datetime-local" id="dt"></div>
+        <div class="input-group"><label>Комментарий</label><textarea id="comm" rows="2"></textarea></div>
+        <button class="main-button" id="submitBtn" onclick="send()">ВНЕСТИ ЗАПИСЬ</button>
+    </div>
+
+    <div class="shved-footer">Создано с любовью от shvedjr</div>
+
+    <script>
+        let tg = window.Telegram.WebApp; 
+        tg.ready();
+        tg.expand();
+
+        let allClients = [];
+
+        document.getElementById('phone').addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, ''); 
+            if (x.startsWith('8')) { x = '7' + x.substring(1); } 
+            else if (x.startsWith('9') && x.length <= 10) { x = '7' + x; }
+            x = x.substring(0, 11); 
+            e.target.value = x.length > 0 ? '+' + x : '';
+
+            if (x.length === 11) {
+                const dup = allClients.find(c => c.phone && c.phone.replace(/\D/g, '') === x);
+                if (dup) {
+                    if (!document.getElementById('p_name').value) document.getElementById('p_name').value = dup.name || '';
+                    if (!document.getElementById('c_name').value) document.getElementById('c_name').value = dup.child_name || '';
+                    if (!document.getElementById('c_age').value) document.getElementById('c_age').value = dup.child_age || '';
+                    if (!document.getElementById('addr').value) {
+                        let a = dup.address || '';
+                        document.getElementById('addr').value = a.includes('text=') ? decodeURIComponent(a.split('text=')[1]) : a;
+                    }
+                    if (!document.getElementById('entrance').value) document.getElementById('entrance').value = dup.entrance || '';
+                    if (!document.getElementById('floor').value) document.getElementById('floor').value = dup.floor || '';
+                    if (!document.getElementById('intercom').value) document.getElementById('intercom').value = dup.intercom || '';
+                    if (!document.getElementById('addr_comment').value) document.getElementById('addr_comment').value = dup.address_comment || '';
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+            }
+        });
+        
+        function select(el) {
+            document.querySelectorAll('.service-btn').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            const isV = el.innerText === "Взрослый";
+            document.getElementById('child_block').style.display = isV ? "none" : "block";
+            document.getElementById('p_label').innerText = isV ? "ФИО Клиента" : "Имя родителя";
+        }
+
+        function getDuration(service, ageStr) {
+            const s = service.toLowerCase();
+            const age = ageStr.toLowerCase();
+            if (s === "консультация" || s === "взрослый") return 60;
+            if (s === "курс" || s === "детский") {
+                const hasYear = age.includes('год') || age.includes('лет');
+                const hasInfantUnits = age.includes('мес') || age.includes('нед') || age.includes('дн');
+                const numMatch = age.match(/\d+/);
+                const num = numMatch ? parseInt(numMatch[0]) : 0;
+                if (hasYear && num >= 1) return 40;
+                if (hasInfantUnits) return 30;
+                if (num >= 1 && !hasInfantUnits) return 40;
+                return 30;
+            }
+            return 30;
+        }
+
+        function send() {
+            const btn = document.getElementById('submitBtn');
+            const serviceName = document.querySelector('.service-btn.active').innerText;
+            const ageValue = document.getElementById('c_age').value.trim();
+            const rawAddr = document.getElementById('addr').value.trim();
+            const dateTimeValue = document.getElementById('dt').value;
+            
+            const d = { 
+                service: serviceName, 
+                parent_name: document.getElementById('p_name').value.trim(), 
+                phone: document.getElementById('phone').value.trim(), 
+                address: rawAddr,
+                entrance: document.getElementById('entrance').value.trim(),
+                floor: document.getElementById('floor').value.trim(),
+                intercom: document.getElementById('intercom').value.trim(),
+                address_comment: document.getElementById('addr_comment').value.trim(),
+                datetime: dateTimeValue, 
+                comment: document.getElementById('comm').value.trim(), 
+                child_name: document.getElementById('c_name').value.trim(), 
+                child_age: ageValue,
+                source: document.getElementById('source').value,
+                contract_sum: document.getElementById('contract_sum').value || 0,
+                duration: getDuration(serviceName, ageValue)
+            };
+            
+            // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ
+            if (!d.phone) {
+                tg.showAlert("❌ Укажите телефон");
+                return;
+            }
+            if (!d.parent_name) {
+                tg.showAlert("❌ Укажите имя родителя/клиента");
+                return;
+            }
+            if (!d.address) {
+                tg.showAlert("❌ Укажите адрес");
+                return;
+            }
+            if (!d.datetime) {
+                tg.showAlert("❌ Укажите дату и время");
+                return;
+            }
+            
+            // Обязательные поля для детского массажа
+            if (serviceName !== "Взрослый") {
+                if (!d.child_name) {
+                    tg.showAlert("❌ Укажите имя ребенка");
+                    return;
+                }
+                if (!d.child_age) {
+                    tg.showAlert("❌ Укажите возраст ребенка");
+                    return;
+                }
+            }
+            
+            // ПРОВЕРКА ДЛЯ КУРСА
+            if (serviceName === "Курс") {
+                const selectedDate = new Date(dateTimeValue);
+                const dayOfWeek = selectedDate.getDay(); // 0 = воскресенье, 1 = понедельник
+                const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+                
+                // ШАГ 1: Если выбран выходной день (суббота или воскресенье)
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    // Вычисляем ближайший понедельник
+                    const daysUntilMonday = dayOfWeek === 0 ? 1 : 2;
+                    const nextMonday = new Date(selectedDate);
+                    nextMonday.setDate(selectedDate.getDate() + daysUntilMonday);
+                    const mondayStr = nextMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+                    
+                    const changeToMonday = confirm(
+                        `⚠️ ВНИМАНИЕ!\n\n` +
+                        `Вы выбрали выходной день (${dayNames[dayOfWeek]}).\n\n` +
+                        `Курс рекомендуется начинать с понедельника.\n\n` +
+                        `Нажмите ОК чтобы изменить дату на понедельник ${mondayStr}\n` +
+                        `Нажмите ОТМЕНА чтобы продолжить с ${dayNames[dayOfWeek]}`
+                    );
+                    
+                    if (changeToMonday) {
+                        // Меняем дату на понедельник
+                        const hours = selectedDate.getHours().toString().padStart(2, '0');
+                        const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+                        const year = nextMonday.getFullYear();
+                        const month = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+                        const day = nextMonday.getDate().toString().padStart(2, '0');
+                        const newDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                        
+                        document.getElementById('dt').value = newDateTime;
+                        d.datetime = newDateTime;
+                        
+                        tg.showAlert(`✅ Дата изменена на понедельник ${mondayStr}`);
+                        return; // Возврат к форме для подтверждения новой даты
+                    }
+                    
+                    // ШАГ 2: Если выбрал продолжить с выходного дня
+                    const skipWeekends = confirm(
+                        `📅 РЕЖИМ ЗАПИСИ КУРСА\n\n` +
+                        `Вы начинаете курс с ${dayNames[dayOfWeek]}.\n\n` +
+                        `Пропустить выходные?\n\n` +
+                        `ДА - первый визит будет перенесен на понедельник ${mondayStr}, курс по схеме 5-2-5\n` +
+                        `НЕТ - первый визит в ${dayNames[dayOfWeek]}, курс 10 дней подряд`
+                    );
+                    
+                    d.skip_weekends = skipWeekends;
+                }
+                // Если НЕ понедельник (но и не выходной) - обычное предупреждение
+                else if (dayOfWeek !== 1) {
+                    const confirmedDay = confirm(
+                        `⚠️ ВНИМАНИЕ!\n\n` +
+                        `Вы выбрали ${dayNames[dayOfWeek]}, а не первый день недели (понедельник).\n\n` +
+                        `Вы точно хотите начать КУРС с этого дня?`
+                    );
+                    
+                    if (!confirmedDay) {
+                        return;
+                    }
+                    
+                    // Спрашиваем про пропуск выходных
+                    const skipWeekends = confirm(
+                        `📅 РЕЖИМ ЗАПИСИ КУРСА\n\n` +
+                        `Пропустить выходные (суббота и воскресенье)?\n\n` +
+                        `ДА - курс по схеме 5-2-5 (пропуск выходных)\n` +
+                        `НЕТ - курс 10 дней подряд без пропусков`
+                    );
+                    
+                    d.skip_weekends = skipWeekends;
+                }
+                // Если понедельник - только вопрос о режиме
+                else {
+                    const skipWeekends = confirm(
+                        `📅 РЕЖИМ ЗАПИСИ КУРСА\n\n` +
+                        `Пропустить выходные (суббота и воскресенье)?\n\n` +
+                        `ДА - курс по схеме 5-2-5 (пропуск выходных)\n` +
+                        `НЕТ - курс 10 дней подряд без пропусков`
+                    );
+                    
+                    d.skip_weekends = skipWeekends;
+                }
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('edit_data')) { d.is_fix = true; }
+
+            btn.innerText = "СОХРАНЯЮ...";
+            btn.style.backgroundColor = "#e09fb0";
+
+            try {
+                tg.sendData(JSON.stringify(d));
+                setTimeout(() => { tg.close(); }, 200);
+            } catch (err) {
+                alert("Ошибка: " + err.message);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let rawAll = urlParams.get('all_data');
+            if (rawAll) {
+                try { allClients = JSON.parse(decodeURIComponent(rawAll)); } catch(e) {}
+            }
+
+            let rawEdit = urlParams.get('edit_data');
+            if (rawEdit) {
+                try {
+                    const old = JSON.parse(decodeURIComponent(rawEdit));
+                    if (old) {
+                        document.getElementById('phone').value = old.phone || '';
+                        document.getElementById('p_name').value = old.parent_name || old.name || '';
+                        document.getElementById('c_name').value = old.child_name || '';
+                        document.getElementById('c_age').value = old.child_age || '';
+                        
+                        let a = old.address || '';
+                        document.getElementById('addr').value = a.includes('text=') ? decodeURIComponent(a.split('text=')[1]) : a;
+                        
+                        document.getElementById('source').value = old.source || 'Не указано';
+                        document.getElementById('contract_sum').value = old.contract_sum || '';
+                        document.getElementById('comm').value = old.comment || '';
+                        if (old.datetime) { document.getElementById('dt').value = old.datetime.substring(0, 16); }
+                        document.querySelectorAll('.service-btn').forEach(btn => {
+                            if (btn.innerText === (old.service || 'Детский')) select(btn);
+                        });
+                    }
+                } catch (e) { console.error(e); }
+            }
+        });
+    </script>
+</body>
+</html>

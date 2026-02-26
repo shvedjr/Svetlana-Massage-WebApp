@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Картотека Светланы</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <style>
+        :root { 
+            --pink: #f2bac9; 
+            --dark: var(--tg-theme-text-color, #5b4d42); 
+            --bg: #fcf1f1; 
+            --mint: #e8f5e9; 
+            --lemon: #fff9c4; 
+            --red: #ff5252; 
+            --tg: #5b4d42; 
+            --gold: #ffd700; 
+            --done-green: #27ae60; 
+            --cancel-red: #eb4d4b;
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --hint: #a69a9a;
+            --border: #f0e2e2;
+        }
+
+        /* Улучшенная ТЕМНАЯ ТЕМА */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #121212; 
+                --secondary-bg: #1e1e1e; 
+                --dark: #e0e0e0; 
+                --border: #2c2c2c; 
+                --hint: #888888;
+                --pink: #ff8fa3; 
+            }
+            body { background-color: var(--bg); color: var(--dark); }
+            .item, .header-card, .v-card, .info-box, .total-card { 
+                background: var(--secondary-bg); 
+                border-color: var(--border); 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+            }
+            .item:hover {
+                box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 4px 12px rgba(242, 186, 201, 0.3);
+                border-color: var(--pink);
+            }
+            .item-number {
+                color: var(--dark);
+                opacity: 0.4;
+            }
+            #search, .f-btn, .s-btn, .client-counter, .tag, .inp, .st-btn, .back-btn, .del-btn { 
+                background: #252525; 
+                border-color: var(--border); 
+                color: var(--dark); 
+            }
+            .search-box { background: var(--bg); }
+            .info-box.b-gold { background: #1a1617; border-color: var(--pink); }
+            .box-value, .phone-value-big, .client-name, .child-info, .addr-value { color: #ffffff; }
+            .edit-profile-btn { background: #252525; border-color: var(--border); color: var(--hint); }
+            .overlay { background: rgba(0, 0, 0, 0.8); }
+            #edit-box, #total-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box { 
+                background: #1e1e1e; 
+                border-top: 1px solid var(--border);
+            }
+            .money-btn { box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        }
+        
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background-color: var(--bg);
+            margin: 0; 
+            color: var(--dark); 
+        }
+        
+        .search-box { position: sticky; top: 0; background: var(--bg); padding: 15px 15px 5px; z-index: 10; }
+        #search { 
+            width: 100%; padding: 16px; border: 2px solid var(--border); border-radius: 20px; outline: none; 
+            box-sizing: border-box; font-size: 0.95rem; background: var(--secondary-bg); color: var(--dark);
+            transition: border-color 0.2s;
+        }
+        #search:focus { border-color: var(--pink); }
+        
+        .filter-bar { display: flex; gap: 10px; padding: 10px 15px 5px; }
+        .f-btn { 
+            flex: 1; padding: 12px; border-radius: 15px; border: 2px solid var(--pink); 
+            background: var(--secondary-bg); color: var(--pink); font-weight: bold; cursor: pointer; font-size: 1rem; 
+            transition: all 0.2s ease;
+        }
+        .f-btn.active { background: var(--pink); color: white; box-shadow: 0 4px 10px rgba(242, 186, 201, 0.4); }
+
+        .sort-bar { display: flex; gap: 10px; padding: 5px 15px 15px; align-items: center; }
+        .s-btn { 
+            padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border); 
+            background: var(--secondary-bg); color: var(--hint); font-size: 0.85rem; font-weight: bold; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .s-btn.active { border-color: var(--pink); color: var(--pink); background: var(--secondary-bg); }
+        .client-counter { 
+            padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border); 
+            background: var(--secondary-bg); color: var(--hint); font-size: 0.85rem; font-weight: bold; margin-left: auto;
+        }
+        
+        .archive-btn {
+            width: 100%; padding: 14px; border-radius: 15px; border: 2px dashed var(--hint);
+            background: var(--secondary-bg); color: var(--hint); font-weight: bold; cursor: pointer;
+            font-size: 0.95rem; transition: all 0.2s ease;
+        }
+        .archive-btn:hover {
+            border-color: var(--pink); color: var(--pink);
+            background: rgba(242, 186, 201, 0.05);
+        }
+        .archive-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .item { 
+            background: var(--secondary-bg); padding: 22px 22px 22px 70px; border-radius: 28px; margin: 12px 15px; 
+            box-shadow: 0 15px 35px rgba(224, 159, 176, 0.25), 0 5px 15px rgba(0, 0, 0, 0.05); 
+            position: relative; border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        .item:hover {
+            box-shadow: 0 20px 45px rgba(224, 159, 176, 0.35), 0 8px 20px rgba(242, 186, 201, 0.2);
+            transform: translateY(-3px);
+            border-color: var(--pink);
+        }
+        .item-number {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--dark);
+            opacity: 0.4;
+            line-height: 1;
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.7rem;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-badge.in-progress {
+            background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+        .status-badge.completed {
+            background: linear-gradient(135deg, #757575 0%, #9e9e9e 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(117, 117, 117, 0.3);
+        }
+        .status-badge.waiting {
+            background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 167, 38, 0.3);
+        }
+        
+        .visit-datetime {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .visit-datetime.today {
+            color: #2e7d32;
+            background: rgba(46, 125, 50, 0.1);
+        }
+        .visit-datetime.waiting {
+            color: #fb8c00;
+            background: rgba(251, 140, 0, 0.1);
+        }
+        .visit-datetime.completed {
+            color: #757575;
+            background: rgba(117, 117, 117, 0.1);
+        }
+        
+        .course-trophy {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            font-size: 0.65rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #8b6914;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .client-name { font-size: 1.35rem; font-weight: 800; display: block; margin-bottom: 6px; color: var(--dark); }
+        .child-info { font-size: 1.1rem; color: var(--dark); margin-bottom: 5px; opacity: 0.9; }
+        .phone-info { font-size: 1.1rem; color: var(--hint); display: block; margin-top: 5px; }
+
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); overflow-y: auto; z-index: 20; }
+        .m-container { padding: 15px; }
+        
+        .nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
+        .back-btn { 
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 14px; border-radius: 15px; border: 2px solid var(--pink); 
+            background: white; color: var(--dark); font-weight: 700; font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(242, 186, 201, 0.3); cursor: pointer;
+        }
+        .del-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 12px; border: 2px solid var(--border);
+            background: white; color: var(--red); font-size: 1rem; cursor: pointer;
+        }
+
+        .header-card { background: var(--secondary-bg); padding: 20px; border-radius: 35px; box-shadow: 0 10px 30px rgba(224, 159, 176, 0.2); margin-bottom: 20px; border: 1px solid var(--border); }
+        .header-card h2 { margin: 0 0 12px 0; font-size: 1.45rem; text-align: center; color: var(--dark); }
+        .edit-profile-btn { 
+            width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 15px; border: 1px solid var(--border); 
+            background: #fdf8f9; color: var(--hint); font-size: 0.85rem; font-weight: bold; cursor: pointer; 
+        }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .info-box { padding: 12px; border-radius: 18px; display: flex; flex-direction: column; gap: 3px; background: white; border: 2px solid var(--border); }
+        
+        .b-gold { border: 2px solid var(--pink); background: rgba(242, 186, 201, 0.05); grid-column: span 2; box-shadow: none; }
+        
+        .box-label { font-size: 0.75rem; font-weight: bold; text-transform: uppercase; color: var(--hint); }
+        .box-value { font-size: 1.1rem; font-weight: 800; color: var(--dark); }
+        
+        .addr-box { grid-column: span 2; padding: 10px 15px; }
+        .addr-value { font-size: 0.95rem; font-weight: 600; color: var(--dark); }
+        .phone-value-big { 
+            font-size: 1.3rem; 
+            font-weight: 800; 
+            color: var(--dark); 
+            text-align: center; 
+            width: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px; 
+        }
+
+        .add-visit-btn { 
+            grid-column: span 2; background: var(--pink); color: white; border: none; padding: 16px; 
+            border-radius: 20px; font-weight: 900; font-size: 1rem; margin-top: 5px; margin-bottom: 5px; 
+            box-shadow: 0 6px 15px rgba(242, 186, 201, 0.4); text-transform: uppercase; cursor: pointer;
+        }
+
+        .actions-grid { 
+            grid-column: span 2; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 5px; 
+            margin-top: 5px;
+        }
+        .action-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+            transition: transform 0.1s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .action-icon:active { transform: scale(0.9); }
+
+        .total-card { background: var(--secondary-bg); padding: 20px; border-radius: 25px; border: 2px dashed var(--pink); margin-bottom: 20px; cursor: pointer; }
+        
+        .v-card { background: var(--secondary-bg); margin-bottom: 12px; padding: 20px; border-radius: 25px; box-shadow: 0 6px 15px rgba(0,0,0,0.03); border-left: 6px solid var(--pink); position: relative; transition: opacity 0.3s; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .v-card.done { border-left-color: var(--done-green); }
+        .v-card.cancelled { border-left-color: var(--cancel-red); }
+        
+        .status-btn-group { display: flex; gap: 8px; margin-top: 15px; }
+        .st-btn { 
+            flex: 1; padding: 12px 8px; border-radius: 14px; border: 1px solid var(--border); 
+            background: var(--secondary-bg); font-size: 0.8rem; font-weight: 800; cursor: pointer; color: var(--dark); transition: all 0.2s; 
+        }
+        .st-btn.active-done { background: var(--done-green); color: white; border-color: var(--done-green); box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3); }
+        .st-btn.active-cancel { background: var(--cancel-red); color: white; border-color: var(--cancel-red); box-shadow: 0 4px 12px rgba(235, 77, 75, 0.3); }
+        .st-btn.inactive { background: var(--secondary-bg); color: var(--hint); border-color: var(--border); box-shadow: none; opacity: 0.5; }
+
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(91, 77, 66, 0.5); z-index: 25; backdrop-filter: blur(4px); }
+        #edit-box, #total-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box, #datetime-edit-box { 
+            display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg); 
+            padding: 25px; border-radius: 35px 35px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); 
+            z-index: 30; box-sizing: border-box; 
+        }
+
+        .tag { display: inline-block; background: var(--secondary-bg); padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; margin: 0 5px 10px 0; cursor: pointer; border: 1px solid var(--border); color: var(--dark); font-weight: 600; }
+        .tag.selected { background: var(--pink); color: white; border-color: var(--pink); }
+        .save-btn { background: #5b4d42; color: white; border: none; padding: 20px; border-radius: 20px; width: 100%; font-weight: 900; font-size: 1.1rem; margin-top: 10px; text-transform: uppercase; box-shadow: 0 5px 15px rgba(91, 77, 66, 0.2); }
+        .inp { 
+            width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 15px; 
+            margin-bottom: 10px; font-size: 1rem; box-sizing: border-box; outline: none; background: var(--secondary-bg); color: var(--dark); 
+        }
+        .inp:focus { border-color: var(--pink); }
+
+        .money-btn { background: #27ae60; border: none; color: white; padding: 14px; border-radius: 15px; font-weight: 900; width: 100%; margin-top: 10px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); }
+        .delete-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer; z-index: 5; }
+    </style>
+</head>
+<body>
+    <div class="search-box">
+        <input type="text" id="search" placeholder="🔎 Поиск клиента: мама, ребёнок или телефон" oninput="render()">
+    </div>
+    
+    <div class="filter-bar">
+        <button class="f-btn active" id="f-all" onclick="setF('all')">Все</button>
+        <button class="f-btn" id="f-today" onclick="setF('today')">Сегодня</button>
+        <button class="f-btn" id="f-tomorrow" onclick="setF('tomorrow')">Завтра</button>
+    </div>
+
+    <div class="sort-bar">
+        <button class="s-btn" id="s-alpha" onclick="setSort('alpha')">А-Я</button>
+        <button class="s-btn" id="s-date" onclick="setSort('date')">По дате</button>
+        <div class="client-counter" id="counter">Клиентов: 0</div>
+    </div>
+    
+    <div id="archive-bar" style="display: none; padding: 10px 15px;">
+        <button class="archive-btn" id="archive-btn" onclick="loadArchive()">
+            📦 Показать архив (<span id="archive-count">0</span>)
+        </button>
+    </div>
+
+    <div id="list"></div>
+
+    <div id="modal">
+        <div class="m-container">
+            <div class="nav-row">
+                <button class="back-btn" onclick="closeM()">
+                    <span style="font-size: 1.1rem;">‹</span> НАЗАД
+                </button>
+                <div id="trophy-badge" style="display: none; padding: 6px 12px; border-radius: 12px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #8b6914; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);"></div>
+                <button class="del-btn" onclick="askDelete()">🗑</button>
+            </div>
+            <div id="m-content"></div>
+        </div>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="closeOverlay()"></div>
+
+    <div id="visit-add-box">
+        <h4 style="margin-top:0; text-align:center; color: var(--dark);">🗓 Записать на сеанс</h4>
+        <div id="service-tags" style="margin-bottom:15px; text-align:center; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;">
+            <span class="tag" onclick="selectService('КУРС (10 сеансов)', this)">КУРС (10 сеансов)</span>
+            <span class="tag" onclick="selectService('Детский массаж', this)">Детский массаж</span>
+            <span class="tag" onclick="selectService('Взрослый массаж', this)">Взрослый массаж</span>
+            <span class="tag" onclick="selectService('КОНСУЛЬТАЦИЯ', this)">КОНСУЛЬТАЦИЯ</span>
+        </div>
+        <div class="box-label" style="margin-bottom:5px;">Дата визита</div>
+        <input type="date" id="av-date" class="inp">
+        <div class="box-label" style="margin-bottom:5px;">Время</div>
+        <input type="time" id="av-time" class="inp">
+        <div class="box-label" style="margin-bottom:5px;">Цена за 1 сеанс (₽)</div>
+        <input type="number" id="va-price" class="inp" placeholder="Например: 2000" inputmode="numeric">
+        <button class="save-btn" style="background:var(--pink);" onclick="saveNewVisit()">ЗАПИСАТЬ</button>
+    </div>
+
+    <div id="address-box">
+        <h4 style="margin-top:0; color: var(--dark); text-align: center;">📍 Детали доступа</h4>
+        <div id="address-details-content"></div>
+        <button class="save-btn" style="background: var(--pink);" onclick="closeAllEditBoxes()">ПОНЯТНО</button>
+    </div>
+
+    <div id="edit-box">
+        <h4 id="e-title" style="margin-top:0; margin-bottom:10px; color: var(--dark);">🧸 Визит</h4>
+        <div id="tags-container" style="margin-bottom:10px;"></div>
+        <textarea id="e-comm" class="inp" placeholder="Комментарий" rows="2"></textarea>
+        <input type="text" id="e-res" class="inp" placeholder="Результат (теги)">
+        <div class="status-btn-group" style="margin-bottom:15px;">
+            <button id="eb-done" class="st-btn" onclick="toggleEditStatus('ВЫПОЛНЕНО')">✅ Выполнено</button>
+            <button id="eb-cancel" class="st-btn" onclick="toggleEditStatus('ОТМЕНЕНО')">❌ Отменено</button>
+        </div>
+        <button class="save-btn" onclick="saveE()">СОХРАНИТЬ</button>
+    </div>
+
+    <div id="total-edit-box">
+        <h4 style="margin-top:0; color: var(--dark);">🏁 Итоговый результат</h4>
+        <textarea id="e-total" class="inp" rows="5" placeholder="Как всё прошло в целом?"></textarea>
+        <button class="save-btn" onclick="saveT()">СОХРАНИТЬ ИТОГ</button>
+    </div>
+
+    <div id="client-edit-box">
+        <h4 style="margin-top:0; color: var(--dark);">✏️ Профиль клиента</h4>
+        <div class="box-label" style="margin-bottom:5px;">ФИО Мамы</div>
+        <input type="text" id="ec-name" class="inp">
+        <div class="box-label" style="margin-bottom:5px;">Телефон</div>
+        <input type="text" id="ec-phone" class="inp">
+        <div style="display: flex; gap:10px;">
+            <div style="flex:2;">
+                <div class="box-label" style="margin-bottom:5px;">Имя ребенка</div>
+                <input type="text" id="ec-child" class="inp">
+            </div>
+            <div style="flex:1;">
+                <div class="box-label" style="margin-bottom:5px;">Возраст</div>
+                <input type="text" id="ec-age" class="inp">
+            </div>
+        </div>
+        <div class="box-label" style="margin-bottom:5px;">Адрес (Улица, дом, кв)</div>
+        <input type="text" id="ec-addr" class="inp">
+        <div style="display: flex; gap:10px;">
+            <div style="flex:1;"><div class="box-label" style="margin-bottom:5px;">Подъезд</div><input type="text" id="ec-entrance" class="inp"></div>
+            <div style="flex:1;"><div class="box-label" style="margin-bottom:5px;">Этаж</div><input type="text" id="ec-floor" class="inp"></div>
+            <div style="flex:1;"><div class="box-label" style="margin-bottom:5px;">Домофон</div><input type="text" id="ec-intercom" class="inp"></div>
+        </div>
+        <div class="box-label" style="margin-bottom:5px;">Заметка к адресу</div>
+        <input type="text" id="ec-addr-comm" class="inp">
+        <button class="save-btn" onclick="saveClient()">ОБНОВИТЬ ДАННЫЕ</button>
+    </div>
+
+    <div id="pay-box">
+        <h4 style="margin-top:0; color: var(--dark); text-align: center;">💵 Зачислить оплату</h4>
+        <div class="box-label" style="margin-bottom:5px;">Сумма оплаты (₽)</div>
+        <input type="number" id="pay-amount" class="inp" placeholder="Например: 5000" inputmode="numeric">
+        <button class="save-btn" onclick="savePay()">ЗАЧИСЛИТЬ</button>
+    </div>
+
+    <div id="plan-box">
+        <h4 style="margin-top:0; color: var(--dark); text-align: center;">📈 Изменить план</h4>
+        <div class="box-label" style="margin-bottom:5px;">Сумма договора (₽)</div>
+        <input type="number" id="plan-amount" class="inp" placeholder="Например: 15000" inputmode="numeric">
+        <button class="save-btn" onclick="savePlan()">ОБНОВИТЬ ПЛАН</button>
+    </div>
+
+    <div id="datetime-edit-box">
+        <h4 style="margin-top:0; color: var(--dark); text-align: center;">📅 Изменить дату и время</h4>
+        <div class="box-label" style="margin-bottom:5px;">Дата визита</div>
+        <input type="date" id="edit-visit-date" class="inp">
+        <div class="box-label" style="margin-bottom:5px;">Время</div>
+        <input type="time" id="edit-visit-time" class="inp">
+        <button class="save-btn" onclick="saveVisitDateTime()">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
+    </div>
+
+    <script>
+        var tg = window.Telegram.WebApp; 
+        tg.expand();
+        
+        var allClients = []; 
+        var currentMode = 'all';
+        var currentSort = 'added';
+        var curV, curC;
+        var curEditStatus = "";
+        var curVisitStatus = ""; // ДОБАВИЛИ: хранит исходный статус визита
+        let curService = "";
+        let selectedService = "";
+        let editingVisitId = null; // Для редактирования даты/времени
+        let archiveLoaded = false; // Флаг загрузки архива
+        let hasArchive = false; // Есть ли архивные клиенты
+
+        function loadData() {
+            const params = new URLSearchParams(window.location.search);
+            const rawCompressed = params.get('c_data'); 
+            const rawFull = params.get('all_data');
+            const archiveCount = params.get('archive_count') || 0;
+            hasArchive = params.get('has_archive') === 'true';
+            
+            if (rawCompressed) {
+                try {
+                    const binary = atob(rawCompressed.replace(/-/g, '+').replace(/_/g, '/'));
+                    const charData = binary.split('').map(x => x.charCodeAt(0));
+                    const binData = new Uint8Array(charData);
+                    const restored = pako.inflate(binData, { to: 'string' });
+                    allClients = JSON.parse(restored);
+                    
+                    // Показываем кнопку архива если есть архивные клиенты
+                    if (hasArchive && archiveCount > 0) {
+                        document.getElementById('archive-count').innerText = archiveCount;
+                        document.getElementById('archive-bar').style.display = 'block';
+                    }
+                    
+                    render();
+                    checkDirectAccess();
+                } catch (e) { 
+                    console.error("Ошибка распаковки:", e);
+                    requestDataFromBot();
+                }
+            } else if (rawFull) {
+                allClients = JSON.parse(decodeURIComponent(rawFull));
+                render();
+                checkDirectAccess();
+            } else {
+                requestDataFromBot();
+            }
+        }
+        
+        function loadArchive() {
+            if (archiveLoaded) return;
+            
+            const btn = document.getElementById('archive-btn');
+            btn.innerText = '⏳ Загрузка архива...';
+            btn.disabled = true;
+            
+            // Отправляем запрос боту на загрузку архива
+            try {
+                tg.sendData(JSON.stringify({action: 'get_archive'}));
+            } catch(e) {
+                console.error('Ошибка запроса архива:', e);
+                btn.innerText = '❌ Ошибка загрузки';
+                setTimeout(() => {
+                    btn.innerText = '📦 Показать архив';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        function checkDirectAccess() {
+            const params = new URLSearchParams(window.location.search);
+            const openId = params.get('open_id') || window.location.hash.replace('#client_', '');
+            if (openId && allClients.length > 0) {
+                const found = allClients.find(x => x.id == openId);
+                if (found) {
+                    setTimeout(() => {
+                        show(found);
+                        const items = document.querySelectorAll('.item');
+                        items.forEach(el => {
+                            if (el.innerText.includes(found.name)) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        });
+                    }, 300);
+                }
+            }
+        }
+
+        function requestDataFromBot() {
+            try { tg.sendData(JSON.stringify({action: 'get_history'})); } catch(e) {}
+        }
+
+        window.addEventListener('load', loadData);
+
+        function getClientStatus(client) {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+            
+            let hasToday = false;
+            let hasFuture = false;
+            let hasActive = false;
+            
+            client.visits.forEach(v => {
+                if (v.status === 'Отменен') return;
+                try {
+                    const visitDate = new Date(v.date);
+                    if (visitDate >= todayStart && visitDate < todayEnd) {
+                        hasToday = true;
+                    } else if (visitDate >= now) {
+                        hasFuture = true;
+                    }
+                    if (v.status === 'planned' || v.status === 'Выполнен') {
+                        hasActive = true;
+                    }
+                } catch {}
+            });
+            
+            if (hasToday) return { status: 'in-progress', text: 'Сегодня', badge: 'in-progress' };
+            if (hasFuture) return { status: 'waiting', text: 'Ожидает', badge: 'waiting' };
+            if (hasActive) return { status: 'completed', text: 'Завершён', badge: 'completed' };
+            return { status: 'completed', text: 'Завершён', badge: 'completed' };
+        }
+        
+        function getNextVisitDate(client) {
+            const now = new Date();
+            let nextVisit = null;
+            let lastVisit = null;
+            
+            client.visits.forEach(v => {
+                if (v.status === 'Отменен') return;
+                try {
+                    const visitDate = new Date(v.date);
+                    
+                    // Ищем ближайший будущий визит
+                    if (visitDate >= now) {
+                        if (!nextVisit || visitDate < nextVisit) {
+                            nextVisit = visitDate;
+                        }
+                    }
+                    
+                    // Ищем последний завершенный визит
+                    if (v.status === 'Выполнен') {
+                        if (!lastVisit || visitDate > lastVisit) {
+                            lastVisit = visitDate;
+                        }
+                    }
+                } catch {}
+            });
+            
+            return nextVisit || lastVisit;
+        }
+        
+        function formatVisitDateTime(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const mins = String(d.getMinutes()).padStart(2, '0');
+            return `${day}.${month} в ${hours}:${mins}`;
+        }
+        
+        function getCompletedCourses(client) {
+            // Подсчитываем завершенные курсы (10 сеансов подряд)
+            let courseVisits = client.visits.filter(v => 
+                v.service && (v.service.includes('Курс') || v.service === 'КУРС')
+            );
+            
+            let completedCourses = 0;
+            let currentCourseCount = 0;
+            
+            courseVisits.forEach(v => {
+                if (v.status === 'Выполнен') {
+                    currentCourseCount++;
+                    if (currentCourseCount === 10) {
+                        completedCourses++;
+                        currentCourseCount = 0;
+                    }
+                }
+            });
+            
+            return completedCourses;
+        }
+        
+        function render() {
+            var l = document.getElementById('list'); 
+            l.innerHTML = '';
+            var q = document.getElementById('search').value.toLowerCase();
+            let displayList = [...allClients];
+            
+            // Фильтрация по режиму
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+            const tomorrowStart = todayEnd;
+            const tomorrowEnd = new Date(tomorrowStart.getTime() + 24 * 60 * 60 * 1000);
+            
+            if (currentMode === 'today') {
+                displayList = displayList.filter(c => {
+                    return c.visits.some(v => {
+                        if (v.status === 'Отменен') return false;
+                        try {
+                            const visitDate = new Date(v.date);
+                            return visitDate >= todayStart && visitDate < todayEnd;
+                        } catch { return false; }
+                    });
+                });
+            } else if (currentMode === 'tomorrow') {
+                displayList = displayList.filter(c => {
+                    return c.visits.some(v => {
+                        if (v.status === 'Отменен') return false;
+                        try {
+                            const visitDate = new Date(v.date);
+                            return visitDate >= tomorrowStart && visitDate < tomorrowEnd;
+                        } catch { return false; }
+                    });
+                });
+            }
+            
+            // Сортировка
+            if (currentSort === 'alpha') {
+                displayList.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            } else if (currentSort === 'date') {
+                // Сортировка по дате ближайшего сеанса (самая близкая к настоящему времени - первая)
+                displayList.sort((a, b) => {
+                    const dateA = getNextVisitDate(a);
+                    const dateB = getNextVisitDate(b);
+                    if (!dateA && !dateB) return 0;
+                    if (!dateA) return 1;
+                    if (!dateB) return -1;
+                    return dateA - dateB;
+                });
+            } else {
+                // Сортировка по ID в обратном порядке (последний добавленный - первый)
+                displayList.sort((a, b) => b.id - a.id);
+            }
+            
+            let count = 0;
+            displayList.forEach((c, index) => {
+                var matchS = (c.name + (c.child_name||'') + (c.phone||'')).toLowerCase().includes(q);
+                if (matchS) {
+                    count++;
+                    var d = document.createElement('div'); 
+                    d.className = 'item';
+                    d.onclick = () => show(c);
+                    
+                    // Динамическая нумерация
+                    var itemNumber = count;
+                    
+                    // Статус клиента
+                    const clientStatus = getClientStatus(c);
+                    let statusText = clientStatus.text;
+                    
+                    // Определяем дату/время для отображения в правом нижнем углу
+                    let dateTimeDisplay = '';
+                    let dateTimeClass = clientStatus.badge;
+                    
+                    if (currentMode === 'today' || currentMode === 'tomorrow') {
+                        // Для фильтров "Сегодня" и "Завтра" - показываем дату и время визита
+                        const targetStart = currentMode === 'today' ? todayStart : tomorrowStart;
+                        const targetEnd = currentMode === 'today' ? todayEnd : tomorrowEnd;
+                        
+                        const targetVisit = c.visits.find(v => {
+                            if (v.status === 'Отменен') return false;
+                            try {
+                                const visitDate = new Date(v.date);
+                                return visitDate >= targetStart && visitDate < targetEnd;
+                            } catch { return false; }
+                        });
+                        
+                        if (targetVisit) {
+                            dateTimeDisplay = formatVisitDateTime(targetVisit.date);
+                        }
+                    } else {
+                        // Для остальных фильтров - показываем дату ближайшего или последнего визита
+                        const nextDate = getNextVisitDate(c);
+                        if (nextDate) {
+                            dateTimeDisplay = formatVisitDateTime(nextDate);
+                        }
+                    }
+                    
+                    const statusBadge = `<div class="status-badge ${clientStatus.badge}">${statusText}</div>`;
+                    const dateTimeBadge = dateTimeDisplay ? `<div class="visit-datetime ${dateTimeClass}">${dateTimeDisplay}</div>` : '';
+                    
+                    // Завершенные курсы
+                    const completedCourses = getCompletedCourses(c);
+                    const trophyBadge = completedCourses > 0 
+                        ? `<div class="course-trophy">🏆 Прошёл курс ${completedCourses}</div>` 
+                        : '';
+                    
+                    d.innerHTML = `<div class="item-number">${itemNumber}</div>${statusBadge}${dateTimeBadge}${trophyBadge}<span class="client-name">${c.name}</span>
+                        <div class="child-info">👶 ${c.child_name || '—'} · ${c.child_age || '?'}</div>
+                        <span class="phone-info">📞 ${c.phone || '—'}</span>`;
+                    l.appendChild(d);
+                }
+            });
+            document.getElementById('counter').innerText = `Клиентов: ${count}`;
+        }
+
+        function setF(m) {
+            currentMode = m;
+            currentSort = 'added'; // При смене фильтра сбрасываем сортировку на "по добавлению"
+            document.getElementById('f-all').className = m === 'all' ? 'f-btn active' : 'f-btn';
+            document.getElementById('f-today').className = m === 'today' ? 'f-btn active' : 'f-btn';
+            document.getElementById('f-tomorrow').className = m === 'tomorrow' ? 'f-btn active' : 'f-btn';
+            // Сбрасываем активность кнопок сортировки
+            document.getElementById('s-alpha').className = 's-btn';
+            document.getElementById('s-date').className = 's-btn';
+            render();
+        }
+        
+        function setSort(s) {
+            currentSort = s;
+            document.getElementById('s-alpha').className = s === 'alpha' ? 's-btn active' : 's-btn';
+            document.getElementById('s-date').className = s === 'date' ? 's-btn active' : 's-btn';
+            render();
+        }
+
+        function copyPhone(num, elId) {
+            navigator.clipboard.writeText(num).then(() => {
+                const el = document.getElementById(elId);
+                const oldVal = el.innerText;
+                el.innerText = "✅ СКОПИРОВАНО!";
+                el.style.color = "var(--done-green)";
+                setTimeout(() => {
+                    el.innerText = oldVal;
+                    el.style.color = "var(--dark)";
+                }, 1200);
+            });
+        }
+
+        function openAddrDetails(c) {
+            const cont = document.getElementById('address-details-content');
+            cont.innerHTML = `
+                <div style="margin-bottom:20px; text-align:center;">
+                    <div style="font-size:1.1rem; font-weight:800; color:var(--dark);">${c.address || '—'}</div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-box"><span class="box-label">Подъезд</span><span class="box-value">${c.entrance || '—'}</span></div>
+                    <div class="info-box"><span class="box-label">Этаж</span><span class="box-value">${c.floor || '—'}</span></div>
+                    <div class="info-box addr-box" onclick="copyPhone('${c.intercom}', 'val-ic')">
+                        <span class="box-label">🔑 Домофон (нажми)</span>
+                        <span class="phone-value-big" id="val-ic" style="text-align:center;">${c.intercom || '—'}</span>
+                    </div>
+                    <div class="info-box addr-box">
+                        <span class="box-label">📝 Заметка</span>
+                        <div style="font-size:1rem; font-weight:600;">${c.address_comment || 'Нет заметок'}</div>
+                    </div>
+                </div>`;
+            openEditBox('address-box');
+        }
+
+        function show(c) {
+            curC = c.id; 
+            var cont = document.getElementById('m-content');
+            var rawPhone = c.phone || "";
+            var cleanPhone = rawPhone.replace(/\D/g, '');
+            if (cleanPhone.length === 11 && cleanPhone.startsWith('8')) {
+                cleanPhone = '7' + cleanPhone.slice(1);
+            } else if (cleanPhone.length === 10) {
+                cleanPhone = '7' + cleanPhone;
+            }
+            var formattedPhone = cleanPhone ? '+' + cleanPhone : '—';
+            
+            var plan = c.contract_sum || 0;
+            var sortedAll = [...c.visits].sort((a,b) => a.id - b.id);
+            var groups = [];
+            for (let i = 0; i < sortedAll.length; i += 10) {
+                groups.push(sortedAll.slice(i, i + 10));
+            }
+            var finalVisits = [];
+            for (let i = groups.length - 1; i >= 0; i--) {
+                finalVisits = finalVisits.concat(groups[i]);
+            }
+            var vHtml = finalVisits.map((v) => {
+                // ЦЕНА БЕРЕТСЯ ТОЛЬКО ИЗ БАЗЫ (price), если нет - показываем 0
+                let displayPrice = v.price || 0;
+                
+                let isCancelled = (v.status === "Отменен") || (v.result_status || v.result || "").includes("ОТМЕНЕНО");
+                let isDone = (v.status === "Выполнен") || (v.result_status || v.result || "").includes("ВЫПОЛНЕНО");
+                let cardClass = "v-card";
+                if(isCancelled) cardClass += " cancelled";
+                if(isDone) cardClass += " done";
+                let resText = v.result || "";
+                let displayRes = resText.replace("ВЫПОЛНЕНО", "").replace("ОТМЕНЕНО", "").trim().replace(/^,|,$/g, '');
+                let resLine = displayRes ? `<div style="background:rgba(242, 186, 201, 0.2); color: var(--dark); padding:10px; border-radius:12px; margin-top:10px; font-weight:bold; font-size:0.9rem;">✨ ${displayRes}</div>` : '';
+                let vNum = sortedAll.findIndex(ov => ov.id === v.id) + 1;
+                
+                // УБРАЛИ КНОПКУ УДАЛЕНИЯ 🗑 - теперь только через ОТМЕНУ
+                let vDate = v.date.split('T')[0];
+                let vTime = v.date.split('T')[1] ? v.date.split('T')[1].substring(0, 5) : '00:00';
+                return `<div class="${cardClass}" onclick="openE(${v.id}, \`${v.service}\`, \`${(v.comment||"").replace(/`/g, "'")}\`, \`${(v.result||"").replace(/`/g, "'")}\`, \`${vDate}\`, '${v.status || 'planned'}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:0.85rem; color:var(--hint); margin-bottom:5px;">
+                            #${vNum} 
+                            <span class="edit-datetime" onclick="event.stopPropagation(); editVisitDateTime(${v.id}, '${vDate}', '${vTime}')" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
+                                📅 ${vDate} ⏰ ${vTime}
+                            </span>
+                        </div>
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--dark); opacity:0.6;">💰 ${displayPrice} ₽</div>
+                    </div>
+                    <div style="font-size:1.1rem; font-weight:800;">🛠 ${v.service}</div> 
+                    <div style="margin-top:5px; font-size:0.95rem; color:var(--hint);">${v.comment||'—'}</div>
+                    ${resLine}
+                    <div style="margin-top:10px; font-size:0.75rem; font-weight:bold; color:${isDone?'var(--done-green)':(isCancelled?'var(--cancel-red)':'var(--hint)')}">
+                        ${isDone ? '● ВЫПОЛНЕНО' : (isCancelled ? '● ОТМЕНЕНО' : '○ ОЖИДАЕТ')}
+                    </div>
+                </div>`;
+            }).join('');
+            var paid = c.total_paid || 0;
+            var debt = plan - paid;
+            var debtColor = debt > 0 ? '#ff5252' : '#2e7d32';
+            
+            var navUrl = "https://yandex.ru/maps/?text=" + encodeURIComponent(c.address || "");
+            var calUrl = "https://calendar.google.com/";
+
+            cont.innerHTML = `
+                <div class="header-card">
+                    <h2>${c.name}</h2>
+                    <button class="edit-profile-btn" id="edit-prof-trigger">✏️ РЕДАКТИРОВАТЬ ПРОФИЛЬ</button>
+                    <div class="info-grid">
+                        <div class="info-box"><span class="box-label">Ребёнок</span><span class="box-value">👶 ${c.child_name || '—'}</span></div>
+                        <div class="info-box"><span class="box-label">Возраст</span><span class="box-value">⏳ ${c.child_age || '?'}</span></div>
+                        
+                        <div class="info-box addr-box" onclick="copyPhone('${formattedPhone}', 'val-ph')">
+                            <span class="phone-value-big" id="val-ph">📞 ${formattedPhone}</span>
+                        </div>
+
+                        <div class="info-box addr-box" onclick='openAddrDetails(${JSON.stringify(c).replace(/'/g, "&#39;")})'>
+                            <span class="box-label">🏠 Адрес (нажми для деталей)</span>
+                            <span class="addr-value">${c.address || '—'}</span>
+                        </div>
+
+                        <div class="info-box b-gold">
+                            <div style="display:flex; justify-content:space-between; align-items:center;" onclick="openPlan(${plan})">
+                                <span class="box-label">💰 Кошелёк</span>
+                                <span style="font-size:0.75rem; color:var(--pink); font-weight:bold;">ИЗМЕНИТЬ ПЛАН ✎</span>
+                            </div>
+                            <div style="margin-top:5px; font-weight:bold; font-size:0.9rem; color:var(--dark);">План: ${plan}₽</div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:5px;">
+                                <div><div style="font-size:0.7rem; color:var(--hint);">ОПЛАЧЕНО</div><div style="font-size:1.2rem; font-weight:800; color:#2e7d32;">${paid} ₽</div></div>
+                                <div style="text-align:right;"><div style="font-size:0.7rem; color:var(--hint);">ОСТАТОК</div><div style="font-size:1.2rem; font-weight:800; color:${debtColor};">${debt} ₽</div></div>
+                            </div>
+                            <button class="money-btn" onclick="openPay()">💵 ЗАЧИСЛИТЬ ОПЛАТУ</button>
+                        </div>
+
+                        <button class="add-visit-btn" onclick="openAddVisit()">➕ ЗАПИСАТЬ НА СЕАНС</button>
+                        
+                        <div class="actions-grid">
+                            <a href="tel:+${cleanPhone}" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Phone_31105.png')"></a>
+                            <a href="https://max.ru/open" onclick="copyPhone('${formattedPhone}', 'val-ph')" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Max_logo_2025.png')"></a>
+                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/WhatsApp-Logo.wine.png')"></a>
+                            <a href="https://t.me/+${cleanPhone}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Telegram_Logo.png')"></a>
+                            <a href="${navUrl}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Yandex.Navigator-Logo.wine.png')"></a>
+                            <a href="${calUrl}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Google_Calendar-Logo.wine.png')"></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="total-card" onclick="openT(\`${(c.total_result||"").replace(/`/g, "'")}\`)">
+                    <span class="box-label">🏁 Итог курса</span>
+                    <div style="margin-top:10px; font-size:1.1rem; font-weight:600;">${c.total_result || 'Нажмите, чтобы добавить итог...'}</div>
+                </div>
+                <h3 style="padding-left:10px; color: var(--dark);">🕒 История визитов</h3>
+                ${vHtml}`;
+            document.getElementById('edit-prof-trigger').onclick = () => openClientEdit(c);
+            
+            // Показываем значок кубка если есть завершенные курсы
+            const completedCourses = getCompletedCourses(c);
+            const trophyBadge = document.getElementById('trophy-badge');
+            if (completedCourses > 0) {
+                trophyBadge.innerHTML = `🏆 Прошёл курс ${completedCourses}`;
+                trophyBadge.style.display = 'block';
+            } else {
+                trophyBadge.style.display = 'none';
+            }
+            
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function openAddVisit() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            
+            document.getElementById('av-date').value = now.toISOString().split('T')[0];
+            document.getElementById('av-time').value = `${hours}:${mins}`; // ПОДСТАВЛЯЕМ ТЕКУЩЕЕ ВРЕМЯ
+            document.getElementById('va-price').value = '';
+            selectedService = "";
+            document.querySelectorAll('#service-tags .tag').forEach(t => t.classList.remove('selected'));
+            openEditBox('visit-add-box');
+        }
+
+        function selectService(s, el) {
+            selectedService = s;
+            document.querySelectorAll('#service-tags .tag').forEach(t => t.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function saveNewVisit() {
+            if (!selectedService) return alert("Выберите тип услуги!");
+            const date = document.getElementById('av-date').value;
+            const time = document.getElementById('av-time').value;
+            const price = document.getElementById('va-price').value || 0;
+            if (!date || !time) return alert("Выберите дату и время!");
+            
+            // ПРОВЕРКА ДЛЯ КУРСА
+            let skipWeekends = false;
+            if (selectedService.includes('КУРС') || selectedService.includes('курс')) {
+                const selectedDate = new Date(date + 'T' + time);
+                const dayOfWeek = selectedDate.getDay(); // 0 = воскресенье, 1 = понедельник
+                const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+                
+                // ШАГ 1: Если выбран выходной день (суббота или воскресенье)
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    // Вычисляем ближайший понедельник
+                    const daysUntilMonday = dayOfWeek === 0 ? 1 : 2;
+                    const nextMonday = new Date(selectedDate);
+                    nextMonday.setDate(selectedDate.getDate() + daysUntilMonday);
+                    const mondayStr = nextMonday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+                    
+                    const changeToMonday = confirm(
+                        `⚠️ ВНИМАНИЕ!\n\n` +
+                        `Вы выбрали выходной день (${dayNames[dayOfWeek]}).\n\n` +
+                        `Курс рекомендуется начинать с понедельника.\n\n` +
+                        `Нажмите ОК чтобы изменить дату на понедельник ${mondayStr}\n` +
+                        `Нажмите ОТМЕНА чтобы продолжить с ${dayNames[dayOfWeek]}`
+                    );
+                    
+                    if (changeToMonday) {
+                        // Меняем дату на понедельник
+                        const year = nextMonday.getFullYear();
+                        const month = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+                        const day = nextMonday.getDate().toString().padStart(2, '0');
+                        const newDate = `${year}-${month}-${day}`;
+                        
+                        document.getElementById('av-date').value = newDate;
+                        alert(`✅ Дата изменена на понедельник ${mondayStr}`);
+                        return; // Возврат к форме для подтверждения новой даты
+                    }
+                    
+                    // ШАГ 2: Если выбрал продолжить с выходного дня
+                    skipWeekends = confirm(
+                        `📅 РЕЖИМ ЗАПИСИ КУРСА\n\n` +
+                        `Вы начинаете курс с ${dayNames[dayOfWeek]}.\n\n` +
+                        `Пропустить выходные?\n\n` +
+                        `ДА - первый визит будет перенесен на понедельник ${mondayStr}, курс по схеме 5-2-5\n` +
+                        `НЕТ - первый визит в ${dayNames[dayOfWeek]}, курс 10 дней подряд`
+                    );
+                }
+                // Если НЕ понедельник (но и не выходной) - обычное предупреждение
+                else if (dayOfWeek !== 1) {
+                    const confirmedDay = confirm(
+                        `⚠️ ВНИМАНИЕ!\n\n` +
+                        `Вы выбрали ${dayNames[dayOfWeek]}, а не первый день недели (понедельник).\n\n` +
+                        `Вы точно хотите начать КУРС с этого дня?`
+                    );
+                    
+                    if (!confirmedDay) {
+                        return;
+                    }
+                    
+                    // Спрашиваем про пропуск выходных
+                    skipWeekends = confirm(
+                        `📅 РЕЖИМ ЗАПИСИ КУРСА\n\n` +
+                        `Пропустить выходные (суббота и воскресенье)?\n\n` +
+                        `ДА - курс по схеме 5-2-5 (пропуск выходных)\n` +
+                        `НЕТ - курс 10 дней подряд без пропусков`
+                    );
+                }
+                // Если понедельник - только вопрос о режиме
+                else {
+                    skipWeekends = confirm(
+                        `📅 РЕЖИМ ЗАПИСИ КУРСА\n\n` +
+                        `Пропустить выходные (суббота и воскресенье)?\n\n` +
+                        `ДА - курс по схеме 5-2-5 (пропуск выходных)\n` +
+                        `НЕТ - курс 10 дней подряд без пропусков`
+                    );
+                }
+            }
+            
+            const btn = document.querySelector('#visit-add-box .save-btn');
+            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+            sendToBot({
+                action: 'add_new_visit',
+                client_id: curC,
+                service: selectedService,
+                start_date: date,
+                start_time: time,
+                price: parseFloat(price),
+                skip_weekends: skipWeekends
+            });
+        }
+
+        // ФУНКЦИЯ deleteVisit УДАЛЕНА - теперь удаление только через ОТМЕНУ
+
+        function openEditBox(id) {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function closeAllEditBoxes() {
+            document.getElementById('overlay').style.display = 'none';
+            const boxes = ['edit-box', 'total-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box'];
+            boxes.forEach(id => document.getElementById(id).style.display = 'none');
+        }
+
+        function closeOverlay() {
+            // Закрываем overlay и все окна
+            closeAllEditBoxes();
+        }
+
+        function editVisitDateTime(visitId, currentDate, currentTime) {
+            editingVisitId = visitId;
+            document.getElementById('edit-visit-date').value = currentDate;
+            document.getElementById('edit-visit-time').value = currentTime;
+            openEditBox('datetime-edit-box');
+        }
+
+        function saveVisitDateTime() {
+            const newDate = document.getElementById('edit-visit-date').value;
+            const newTime = document.getElementById('edit-visit-time').value;
+            
+            if (!newDate || !newTime) {
+                alert("Укажите дату и время!");
+                return;
+            }
+            
+            const btn = document.querySelector('#datetime-edit-box .save-btn');
+            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+            
+            sendToBot({
+                action: 'edit_visit_datetime',
+                visit_id: editingVisitId,
+                client_id: curC,
+                new_date: newDate,
+                new_time: newTime
+            });
+        }
+
+        function openE(id, service, comm, res, date, status) { 
+            curV = id; 
+            curService = service;
+            curVisitStatus = status || 'planned'; // СОХРАНЯЕМ ТЕКУЩИЙ СТАТУС
+            document.getElementById('e-title').innerText = `🛠 ${service} (${date})`;
+            document.getElementById('e-comm').value = comm; 
+            curEditStatus = "";
+            if(res.includes("ВЫПОЛНЕНО") || status === "Выполнен") curEditStatus = "ВЫПОЛНЕНО";
+            if(res.includes("ОТМЕНЕНО") || status === "Отменен") curEditStatus = "ОТМЕНЕНО";
+            document.getElementById('e-res').value = res.replace("ВЫПОЛНЕНО", "").replace("ОТМЕНЕНО", "").trim().replace(/^,|,$/g, '');
+            const tags = ['😊 Спокоен', '😢 Плакал', '✨ Прогресс', '💤 Спал', '🦖 Активничал'];
+            document.getElementById('tags-container').innerHTML = tags.map(t => `<span class="tag" onclick="addTag('${t}')">${t}</span>`).join('');
+            updateEditStatusUI();
+            openEditBox('edit-box'); 
+        }
+
+        function toggleEditStatus(status) {
+            curEditStatus = (curEditStatus === status) ? "" : status;
+            updateEditStatusUI();
+        }
+
+        function updateEditStatusUI() {
+            const bDone = document.getElementById('eb-done');
+            const bCancel = document.getElementById('eb-cancel');
+            bDone.className = "st-btn " + (curEditStatus === 'ВЫПОЛНЕНО' ? "active-done" : (curEditStatus === 'ОТМЕНЕНО' ? "inactive" : ""));
+            bCancel.className = "st-btn " + (curEditStatus === 'ОТМЕНЕНО' ? "active-cancel" : (curEditStatus === 'ВЫПОЛНЕНО' ? "inactive" : ""));
+        }
+
+        function addTag(t) { 
+            var i = document.getElementById('e-res'); 
+            i.value = i.value ? i.value + ', ' + t : t; 
+        }
+
+        function saveE() { 
+            const btn = document.querySelector('#edit-box .save-btn');
+            
+            // ПРОВЕРКА: если отменяем, должна быть причина
+            if (curEditStatus === 'ОТМЕНЕНО') {
+                const reason = document.getElementById('e-res').value.trim();
+                if (!reason) {
+                    alert("⚠️ Укажите причину отмены в поле результата!");
+                    return;
+                }
+            }
+            
+            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+            let finalRes = document.getElementById('e-res').value.trim();
+            if(curEditStatus) finalRes = curEditStatus + (finalRes ? ", " + finalRes : "");
+            const client = allClients.find(c => c.id === curC);
+            let displayTitle = document.getElementById('e-title').innerText;
+            let sessionInfo = displayTitle.replace('🛠 ', '').split(' (')[0];
+            
+            sendToBot({ 
+                action: 'edit_visit', 
+                visit_id: curV, 
+                client_id: curC, 
+                name: client ? client.name : "Клиент", 
+                session_display: sessionInfo, 
+                comment: document.getElementById('e-comm').value, 
+                result: finalRes, 
+                status_only: curEditStatus,
+                old_status: curVisitStatus // ОТПРАВЛЯЕМ СТАРЫЙ СТАТУС ДЛЯ ПРОВЕРКИ
+            });
+        }
+
+        function openPay() {
+            document.getElementById('pay-amount').value = '';
+            openEditBox('pay-box');
+        }
+
+        function openPlan(currentPlan) {
+            document.getElementById('plan-amount').value = currentPlan;
+            openEditBox('plan-box');
+        }
+
+        function openClientEdit(c) {
+            document.getElementById('ec-name').value = c.name;
+            document.getElementById('ec-phone').value = c.phone || '';
+            document.getElementById('ec-child').value = c.child_name || '';
+            document.getElementById('ec-age').value = c.child_age || '';
+            document.getElementById('ec-addr').value = c.address || '';
+            document.getElementById('ec-entrance').value = c.entrance || '';
+            document.getElementById('ec-floor').value = c.floor || '';
+            document.getElementById('ec-intercom').value = c.intercom || '';
+            document.getElementById('ec-addr-comm').value = c.address_comment || '';
+            openEditBox('client-edit-box');
+        }
+
+        function openT(v) { 
+            document.getElementById('e-total').value = v; 
+            openEditBox('total-edit-box'); 
+        }
+        
+        function sendToBot(data) {
+            try { tg.sendData(JSON.stringify(data)); } catch (e) {}
+            setTimeout(() => { tg.close(); }, 300);
+        }
+
+        function savePay() {
+            const amount = document.getElementById('pay-amount').value;
+            if(!amount) return alert("Введите сумму");
+            const btn = document.querySelector('#pay-box .save-btn');
+            btn.innerText = "ЗАЧИСЛЯЕМ..."; btn.style.opacity = "0.5";
+            sendToBot({ action: 'add_payment', client_id: curC, amount: parseFloat(amount) });
+        }
+
+        function savePlan() {
+            const amount = document.getElementById('plan-amount').value;
+            if(!amount || amount < 0) return alert("Введите корректную сумму");
+            const btn = document.querySelector('#plan-box .save-btn');
+            btn.innerText = "ОБНОВЛЯЕМ..."; btn.style.opacity = "0.5";
+            sendToBot({ action: 'edit_plan', client_id: curC, amount: parseFloat(amount) });
+        }
+
+        function saveT() { 
+            const btn = document.querySelector('#total-edit-box .save-btn');
+            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+            sendToBot({ action: 'edit_total', client_id: curC, total_result: document.getElementById('e-total').value });
+        }
+
+        function saveClient() {
+            const btn = document.querySelector('#client-edit-box .save-btn');
+            btn.innerText = "ОБНОВЛЯЕМ..."; btn.style.opacity = "0.5";
+            sendToBot({ 
+                action: 'edit_client', client_id: curC, name: document.getElementById('ec-name').value, phone: document.getElementById('ec-phone').value, 
+                child_name: document.getElementById('ec-child').value, child_age: document.getElementById('ec-age').value, address: document.getElementById('ec-addr').value,
+                entrance: document.getElementById('ec-entrance').value, floor: document.getElementById('ec-floor').value, intercom: document.getElementById('ec-intercom').value,
+                address_comment: document.getElementById('ec-addr-comm').value
+            });
+        }
+
+        function askDelete() {
+            tg.showConfirm("Внимание! Вы действительно хотите безвозвратно удалить эту карточку?", (confirm) => {
+                if (confirm) sendToBot({ action: 'delete_client', client_id: curC });
+            });
+        }
+
+        function closeM() { 
+            document.getElementById('modal').style.display = 'none'; 
+            window.location.hash = '';
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
