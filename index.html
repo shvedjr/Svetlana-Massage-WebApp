@@ -131,8 +131,15 @@
 
         document.getElementById('phone').addEventListener('input', function (e) {
             let x = e.target.value.replace(/\D/g, ''); 
-            if (x.startsWith('8')) { x = '7' + x.substring(1); } 
-            else if (x.startsWith('9') && x.length <= 10) { x = '7' + x; }
+            // Любая первая цифра (кроме 7 и 8) превращается в +7
+            if (x.length > 0 && !x.startsWith('7') && !x.startsWith('8')) {
+                x = '7' + x;
+            }
+            // 8 в начале заменяем на 7
+            if (x.startsWith('8')) { 
+                x = '7' + x.substring(1); 
+            }
+            // Ограничиваем длину до 11 цифр (7 + 10 цифр номера)
             x = x.substring(0, 11); 
             e.target.value = x.length > 0 ? '+' + x : '';
 
@@ -208,6 +215,12 @@
             // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ
             if (!d.phone) {
                 tg.showAlert("❌ Укажите телефон");
+                return;
+            }
+            // Проверка корректности телефона (должен быть +7 и 10 цифр)
+            const phoneDigits = d.phone.replace(/\D/g, '');
+            if (phoneDigits.length !== 11 || !phoneDigits.startsWith('7')) {
+                tg.showAlert("❌ Телефон введен некорректно. Должен быть формат +7XXXXXXXXXX (11 цифр)");
                 return;
             }
             if (!d.parent_name) {
