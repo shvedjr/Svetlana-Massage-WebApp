@@ -81,11 +81,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px;">
             <div>
                 <label>Подъезд</label>
-                <input type="text" id="entrance" placeholder="№" style="margin-bottom: 0;">
+                <input type="number" id="entrance" placeholder="№" style="margin-bottom: 0;" inputmode="numeric" pattern="[0-9]*">
             </div>
             <div>
                 <label>Этаж</label>
-                <input type="text" id="floor" placeholder="№" style="margin-bottom: 0;">
+                <input type="number" id="floor" placeholder="№" style="margin-bottom: 0;" inputmode="numeric" pattern="[0-9]*">
             </div>
             <div>
                 <label>Домофон</label>
@@ -130,18 +130,29 @@
         let allClients = [];
 
         document.getElementById('phone').addEventListener('input', function (e) {
+            // Удаляем все нецифровые символы (включая +, пробелы, скобки и т.д.)
             let x = e.target.value.replace(/\D/g, ''); 
-            // Любая первая цифра (кроме 7 и 8) превращается в +7
-            if (x.length > 0 && !x.startsWith('7') && !x.startsWith('8')) {
+            
+            // Если ничего не введено - очищаем поле
+            if (x.length === 0) {
+                e.target.value = '';
+                return;
+            }
+            
+            // Если первая цифра 8 - заменяем на 7
+            if (x.startsWith('8')) {
+                x = '7' + x.substring(1);
+            }
+            // Если первая цифра НЕ 7 - добавляем 7 в начало
+            else if (!x.startsWith('7')) {
                 x = '7' + x;
             }
-            // 8 в начале заменяем на 7
-            if (x.startsWith('8')) { 
-                x = '7' + x.substring(1); 
-            }
+            
             // Ограничиваем длину до 11 цифр (7 + 10 цифр номера)
             x = x.substring(0, 11); 
-            e.target.value = x.length > 0 ? '+' + x : '';
+            
+            // Всегда показываем с +
+            e.target.value = '+' + x;
 
             if (x.length === 11) {
                 const dup = allClients.find(c => c.phone && c.phone.replace(/\D/g, '') === x);
