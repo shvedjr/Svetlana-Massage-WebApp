@@ -18,6 +18,61 @@
             --card-shadow: 0 10px 30px rgba(224, 159, 176, 0.2);
         }
         
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a1a;
+                --accent-pink: #d4869c;
+                --text-dark: #e0e0e0;
+                --input-border: #3a3a3a;
+                --white: #2a2a2a;
+                --input-bg: #2a2a2a;
+                --label-color: #b8b8b8;
+                --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            }
+            
+            .brand-header {
+                color: #d4869c;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            }
+            
+            .service-btn {
+                background: var(--input-bg);
+                border-color: #3a3a3a;
+                color: var(--text-dark);
+            }
+            
+            .service-btn.active {
+                background: #d4869c;
+                color: #1a1a1a;
+                border-color: #d4869c;
+            }
+            
+            .child-section {
+                background: rgba(212, 134, 156, 0.1);
+                border-color: #d4869c;
+            }
+            
+            .main-button {
+                background-color: #d4869c;
+                color: #1a1a1a;
+                box-shadow: 0 6px 15px rgba(212, 134, 156, 0.3);
+            }
+            
+            .calendar-link {
+                background: var(--input-bg);
+                border-color: #4a6b75;
+                color: #8fb3bd;
+            }
+            
+            .shved-footer {
+                color: #666;
+            }
+            
+            input::-webkit-calendar-picker-indicator {
+                filter: invert(1) grayscale(1) opacity(0.5);
+            }
+        }
+        
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; min-height: 100vh; color: var(--text-dark); }
         .brand-header { text-align: center; font-family: 'Caveat', cursive; font-size: 2.2rem; color: #e09fb0; margin-bottom: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
         .card { background: var(--white); border-radius: 30px; padding: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(242, 186, 201, 0.3); }
