@@ -163,7 +163,7 @@
         
         .visit-datetime {
             position: absolute;
-            bottom: 12px;
+            bottom: 42px;
             right: 12px;
             font-size: 0.75rem;
             font-weight: bold;
@@ -609,23 +609,46 @@
         }
         
         function getCompletedCourses(client) {
-            // Подсчитываем завершенные курсы (10 сеансов подряд)
-            let courseVisits = client.visits.filter(v => 
-                v.service && (v.service.includes('Курс') || v.service === 'КУРС')
+            // Подсчитываем завершенные курсы
+            // Курс = 10 выполненных сеансов в течение 30 дней (кроме консультаций)
+            let allVisits = client.visits.filter(v => 
+                v.service && !v.service.includes('Консультация') && v.status === 'Выполнен'
             );
             
-            let completedCourses = 0;
-            let currentCourseCount = 0;
+            // Сортируем по дате
+            allVisits.sort((a, b) => new Date(a.date) - new Date(b.date));
             
-            courseVisits.forEach(v => {
-                if (v.status === 'Выполнен') {
-                    currentCourseCount++;
-                    if (currentCourseCount === 10) {
-                        completedCourses++;
-                        currentCourseCount = 0;
+            let completedCourses = [];
+            let courseNumber = 1;
+            let usedVisitIds = new Set();
+            
+            // Проходим по всем визитам и ищем группы из 10 сеансов в пределах 30 дней
+            for (let i = 0; i < allVisits.length; i++) {
+                if (usedVisitIds.has(i)) continue;
+                
+                let courseGroup = [i];
+                let startDate = new Date(allVisits[i].date);
+                
+                // Ищем следующие 9 сеансов в пределах 30 дней от первого
+                for (let j = i + 1; j < allVisits.length && courseGroup.length < 10; j++) {
+                    if (usedVisitIds.has(j)) continue;
+                    
+                    let currentDate = new Date(allVisits[j].date);
+                    let daysDiff = (currentDate - startDate) / (1000 * 60 * 60 * 24);
+                    
+                    if (daysDiff <= 30) {
+                        courseGroup.push(j);
                     }
                 }
-            });
+                
+                // Если нашли 10 сеансов в пределах 30 дней - это курс
+                if (courseGroup.length === 10) {
+                    completedCourses.push(courseNumber);
+                    courseNumber++;
+                    // Помечаем эти визиты как использованные
+                    courseGroup.forEach(idx => usedVisitIds.add(idx));
+                }
+            }
             
             return completedCourses;
         }
@@ -732,8 +755,8 @@
                     
                     // Завершенные курсы
                     const completedCourses = getCompletedCourses(c);
-                    const trophyBadge = completedCourses > 0 
-                        ? `<div class="course-trophy">🏆 Прошёл курс ${completedCourses}</div>` 
+                    const trophyBadge = completedCourses.length > 0 
+                        ? `<div class="course-trophy">🏆 Прошёл курс ${completedCourses.join(', ')}</div>` 
                         : '';
                     
                     d.innerHTML = `<div class="item-number">${itemNumber}</div>${statusBadge}${dateTimeBadge}${trophyBadge}<span class="client-name">${c.name}</span>
@@ -915,8 +938,8 @@
             // Показываем значок кубка если есть завершенные курсы
             const completedCourses = getCompletedCourses(c);
             const trophyBadge = document.getElementById('trophy-badge');
-            if (completedCourses > 0) {
-                trophyBadge.innerHTML = `🏆 Прошёл курс ${completedCourses}`;
+            if (completedCourses.length > 0) {
+                trophyBadge.innerHTML = `🏆 Прошёл курс ${completedCourses.join(', ')}`;
                 trophyBadge.style.display = 'block';
             } else {
                 trophyBadge.style.display = 'none';
