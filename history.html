@@ -324,6 +324,7 @@
     <div class="sort-bar">
         <button class="s-btn" id="s-alpha" onclick="setSort('alpha')">А-Я</button>
         <button class="s-btn" id="s-date" onclick="setSort('date')">По дате</button>
+        <button class="s-btn" id="s-refresh" onclick="refreshData()" style="background: var(--pink); color: white;">🔄 Обновить</button>
         <div class="client-counter" id="counter">Клиентов: 0</div>
     </div>
     
@@ -511,6 +512,22 @@
                     btn.innerText = '📦 Показать архив';
                     btn.disabled = false;
                 }, 2000);
+            }
+        }
+        
+        function refreshData() {
+            const btn = document.getElementById('s-refresh');
+            btn.innerText = '⏳ Обновление...';
+            btn.disabled = true;
+            
+            // Запрашиваем свежие данные у бота
+            try {
+                tg.sendData(JSON.stringify({action: 'get_history'}));
+            } catch(e) {
+                console.error('Ошибка обновления:', e);
+                tg.showAlert('❌ Ошибка обновления данных');
+                btn.innerText = '🔄 Обновить';
+                btn.disabled = false;
             }
         }
 
