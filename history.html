@@ -1206,11 +1206,53 @@
         }
 
         function saveClient() {
+            // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ
+            const name = document.getElementById('ec-name').value.trim();
+            const phone = document.getElementById('ec-phone').value.trim();
+            const childName = document.getElementById('ec-child').value.trim();
+            const childAge = document.getElementById('ec-age').value.trim();
+            const address = document.getElementById('ec-addr').value.trim();
+            
+            if (!phone) {
+                tg.showAlert("❌ Укажите телефон");
+                return;
+            }
+            
+            // Проверка корректности телефона
+            const phoneDigits = phone.replace(/\D/g, '');
+            if (phoneDigits.length !== 11 || !phoneDigits.startsWith('7')) {
+                tg.showAlert("❌ Телефон введен некорректно. Должен быть формат +7XXXXXXXXXX (11 цифр)");
+                return;
+            }
+            
+            if (!name) {
+                tg.showAlert("❌ Укажите имя родителя/клиента");
+                return;
+            }
+            
+            if (!address) {
+                tg.showAlert("❌ Укажите адрес");
+                return;
+            }
+            
+            // Проверка для детского массажа (если есть данные о ребенке)
+            const currentClient = allClients.find(c => c.id === curC);
+            if (currentClient && currentClient.service_type !== 'adult') {
+                if (!childName) {
+                    tg.showAlert("❌ Укажите имя ребенка");
+                    return;
+                }
+                if (!childAge) {
+                    tg.showAlert("❌ Укажите возраст ребенка");
+                    return;
+                }
+            }
+            
             const btn = document.querySelector('#client-edit-box .save-btn');
             btn.innerText = "ОБНОВЛЯЕМ..."; btn.style.opacity = "0.5";
             sendToBot({ 
-                action: 'edit_client', client_id: curC, name: document.getElementById('ec-name').value, phone: document.getElementById('ec-phone').value, 
-                child_name: document.getElementById('ec-child').value, child_age: document.getElementById('ec-age').value, address: document.getElementById('ec-addr').value,
+                action: 'edit_client', client_id: curC, name: name, phone: phone, 
+                child_name: childName, child_age: childAge, address: address,
                 entrance: document.getElementById('ec-entrance').value, floor: document.getElementById('ec-floor').value, intercom: document.getElementById('ec-intercom').value,
                 address_comment: document.getElementById('ec-addr-comm').value
             });
