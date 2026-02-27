@@ -324,7 +324,6 @@
     <div class="sort-bar">
         <button class="s-btn" id="s-alpha" onclick="setSort('alpha')">А-Я</button>
         <button class="s-btn" id="s-date" onclick="setSort('date')">По дате</button>
-        <button class="s-btn" id="s-refresh" onclick="refreshData()" style="background: var(--pink); color: white;">🔄 Обновить</button>
         <div class="client-counter" id="counter">Клиентов: 0</div>
     </div>
     
@@ -512,22 +511,6 @@
                     btn.innerText = '📦 Показать архив';
                     btn.disabled = false;
                 }, 2000);
-            }
-        }
-        
-        function refreshData() {
-            const btn = document.getElementById('s-refresh');
-            btn.innerText = '⏳ Обновление...';
-            btn.disabled = true;
-            
-            // Запрашиваем свежие данные у бота
-            try {
-                tg.sendData(JSON.stringify({action: 'get_history'}));
-            } catch(e) {
-                console.error('Ошибка обновления:', e);
-                tg.showAlert('❌ Ошибка обновления данных');
-                btn.innerText = '🔄 Обновить';
-                btn.disabled = false;
             }
         }
 
@@ -912,12 +895,12 @@
                         <button class="add-visit-btn" onclick="openAddVisit()">➕ ЗАПИСАТЬ НА СЕАНС</button>
                         
                         <div class="actions-grid">
-                            <a href="tel:+${cleanPhone}" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Phone_31105.png')"></a>
-                            <a href="https://max.ru/open" onclick="copyPhone('${formattedPhone}', 'val-ph')" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Max_logo_2025.png')"></a>
-                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/WhatsApp-Logo.wine.png')"></a>
-                            <a href="https://t.me/+${cleanPhone}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Telegram_Logo.png')"></a>
-                            <a href="${navUrl}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Yandex.Navigator-Logo.wine.png')"></a>
-                            <a href="${calUrl}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage/main/icons/Google_Calendar-Logo.wine.png')"></a>
+                            <a href="tel:+${cleanPhone}" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage-WebApp/main/icons/Phone_31105.png')"></a>
+                            <a href="https://max.ru/open" onclick="copyPhone('${formattedPhone}', 'val-ph')" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage-WebApp/main/icons/Max_logo_2025.png')"></a>
+                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage-WebApp/main/icons/WhatsApp-Logo.wine.png')"></a>
+                            <a href="https://t.me/+${cleanPhone}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage-WebApp/main/icons/Telegram_Logo.png')"></a>
+                            <a href="${navUrl}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage-WebApp/main/icons/Yandex.Navigator-Logo.wine.png')"></a>
+                            <a href="${calUrl}" target="_blank" class="action-icon" style="background-image: url('https://raw.githubusercontent.com/shvedjr/Svetlana-Massage-WebApp/main/icons/Google_Calendar-Logo.wine.png')"></a>
                         </div>
                     </div>
                 </div>
@@ -1290,3 +1273,4 @@
     </script>
 </body>
 </html>
+
