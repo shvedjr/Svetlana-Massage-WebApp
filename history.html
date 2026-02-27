@@ -163,7 +163,7 @@
         
         .visit-datetime {
             position: absolute;
-            bottom: 42px;
+            bottom: 50px;
             right: 12px;
             font-size: 0.75rem;
             font-weight: bold;
@@ -603,9 +603,10 @@
             const d = new Date(date);
             const day = String(d.getDate()).padStart(2, '0');
             const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
             const hours = String(d.getHours()).padStart(2, '0');
             const mins = String(d.getMinutes()).padStart(2, '0');
-            return `${day}.${month} в ${hours}:${mins}`;
+            return `${day}.${month}.${year} в ${hours}:${mins}`;
         }
         
         function getCompletedCourses(client) {
