@@ -873,16 +873,14 @@
                 let vNum = sortedAll.findIndex(ov => ov.id === v.id) + 1;
                 
                 // УБРАЛИ КНОПКУ УДАЛЕНИЯ 🗑 - теперь только через ОТМЕНУ
-                let vDate = v.date.split('T')[0]; // YYYY-MM-DD для input
+                let vDate = v.date.split('T')[0];
                 let vTime = v.date.split('T')[1] ? v.date.split('T')[1].substring(0, 5) : '00:00';
-                // Форматируем дату для отображения: DD.MM.YYYY
-                let vDateDisplay = vDate.split('-').reverse().join('.');
                 return `<div class="${cardClass}" onclick="openE(${v.id}, \`${v.service}\`, \`${(v.comment||"").replace(/`/g, "'")}\`, \`${(v.result||"").replace(/`/g, "'")}\`, \`${vDate}\`, '${v.status || 'planned'}')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:0.85rem; color:var(--hint); margin-bottom:5px;">
                             #${vNum} 
                             <span class="edit-datetime" onclick="event.stopPropagation(); editVisitDateTime(${v.id}, '${vDate}', '${vTime}', \`${v.service}\`)" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
-                                📅 ${vDateDisplay} ⏰ ${vTime}
+                                📅 ${vDate} ⏰ ${vTime}
                             </span>
                         </div>
                         <div style="font-size:0.85rem; font-weight:700; color:var(--dark); opacity:0.6;">💰 ${displayPrice} ₽</div>
