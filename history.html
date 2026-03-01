@@ -376,8 +376,8 @@
         <input type="date" id="av-date" class="inp">
         <div class="box-label" style="margin-bottom:5px;">Время</div>
         <input type="time" id="av-time" class="inp">
-        <div class="box-label" style="margin-bottom:5px;">Цена за 1 сеанс (₽)</div>
-        <input type="number" id="va-price" class="inp" placeholder="Например: 2000" inputmode="numeric">
+        <div class="box-label" style="margin-bottom:5px;">Цена за 1 сеанс (₽) <span style="color: red;">*</span></div>
+        <input type="number" id="va-price" class="inp" placeholder="Например: 2000" inputmode="numeric" required min="1">
         <button class="save-btn" style="background:var(--pink);" onclick="saveNewVisit()">ЗАПИСАТЬ</button>
     </div>
 
@@ -986,8 +986,13 @@
             if (!selectedService) return alert("Выберите тип услуги!");
             const date = document.getElementById('av-date').value;
             const time = document.getElementById('av-time').value;
-            const price = document.getElementById('va-price').value || 0;
+            const priceInput = document.getElementById('va-price');
+            const price = parseFloat(priceInput.value) || 0;
             if (!date || !time) return alert("Выберите дату и время!");
+            if (price <= 0) {
+                priceInput.focus();
+                return alert("⚠️ Укажите стоимость сеанса!\n\nЦена должна быть больше 0 ₽");
+            }
             
             // ПРОВЕРКА ДЛЯ КУРСА
             let skipWeekends = false;

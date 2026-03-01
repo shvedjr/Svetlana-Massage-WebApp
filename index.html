@@ -162,8 +162,8 @@
         </div>
 
         <div class="input-group">
-            <label>Стоимость одного сеанса (план)</label>
-            <input type="number" id="contract_sum" placeholder="Например: 2000" inputmode="numeric">
+            <label>Стоимость одного сеанса (план) <span style="color: red;">*</span></label>
+            <input type="number" id="contract_sum" placeholder="Например: 2000" inputmode="numeric" required min="1">
         </div>
 
         <a href="https://calendar.google.com/calendar/r/day" target="_blank" class="calendar-link">
@@ -303,6 +303,12 @@
             }
             if (!d.source || d.source === "Не указано") {
                 tg.showAlert("❌ Укажите откуда узнали о вас");
+                return;
+            }
+            
+            // ВАЛИДАЦИЯ СУММЫ ДОГОВОРА
+            if (!d.contract_sum || parseFloat(d.contract_sum) <= 0) {
+                tg.showAlert("❌ Укажите стоимость сеанса (должна быть больше 0)");
                 return;
             }
             
