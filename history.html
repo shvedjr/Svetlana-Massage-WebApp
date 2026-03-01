@@ -479,6 +479,8 @@
             const archiveCount = params.get('archive_count') || 0;
             hasArchive = params.get('has_archive') === 'true';
             
+            console.log('📋 loadData: rawCompressed=', rawCompressed ? 'есть' : 'нет', 'archiveCount=', archiveCount);
+            
             if (rawCompressed) {
                 try {
                     const binary = atob(rawCompressed.replace(/-/g, '+').replace(/_/g, '/'));
@@ -486,6 +488,11 @@
                     const binData = new Uint8Array(charData);
                     const restored = pako.inflate(binData, { to: 'string' });
                     allClients = JSON.parse(restored);
+                    
+                    console.log('✅ Данные загружены:', allClients.length, 'клиентов');
+                    if (allClients.length > 0) {
+                        console.log('Первый клиент:', allClients[0].name, 'ID=', allClients[0].id);
+                    }
                     
                     // Показываем кнопку архива если есть архивные клиенты
                     if (hasArchive && archiveCount > 0) {
@@ -496,7 +503,7 @@
                     render();
                     checkDirectAccess();
                 } catch (e) { 
-                    console.error("Ошибка распаковки:", e);
+                    console.error("❌ Ошибка распаковки:", e);
                     requestDataFromBot();
                 }
             } else if (rawFull) {
