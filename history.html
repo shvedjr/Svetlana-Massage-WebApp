@@ -888,7 +888,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:0.85rem; color:var(--hint); margin-bottom:5px;">
                             #${vNum} 
-                            <span class="edit-datetime" onclick="event.stopPropagation(); editVisitDateTime(${v.id}, '${vDate}', '${vTime}')" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
+                            <span class="edit-datetime" onclick="event.stopPropagation(); editVisitDateTime(${v.id}, '${vDate}', '${vTime}', \`${v.service}\`)" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
                                 📅 ${vDateDisplay} ⏰ ${vTime}
                             </span>
                         </div>
@@ -1104,6 +1104,9 @@
             document.getElementById(id).style.display = 'block';
         }
 
+        let editingVisitId = null;
+        let editingVisitService = null;
+
         function closeAllEditBoxes() {
             document.getElementById('overlay').style.display = 'none';
             const boxes = ['edit-box', 'total-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box', 'price-edit-box'];
@@ -1115,8 +1118,9 @@
             closeAllEditBoxes();
         }
 
-        function editVisitDateTime(visitId, currentDate, currentTime) {
+        function editVisitDateTime(visitId, currentDate, currentTime, service) {
             editingVisitId = visitId;
+            editingVisitService = service || '';
             document.getElementById('edit-visit-date').value = currentDate;
             document.getElementById('edit-visit-time').value = currentTime;
             openEditBox('datetime-edit-box');
@@ -1131,6 +1135,22 @@
                 return;
             }
             
+            // Проверяем, это курс?
+            const isCourse = editingVisitService && (editingVisitService.toUpperCase().includes('КУРС') || editingVisitService.includes('курс'));
+            
+            if (isCourse) {
+                const confirmed = confirm(
+                    "⚠️ ИЗМЕНЕНИЕ ДАТЫ КУРСА\n\n" +
+                    "При изменении даты сеанса курса все последующие сеансы автоматически сдвинутся на новые даты.\n\n" +
+                    "Схема курса (5-2-5 или подряд) будет сохранена.\n\n" +
+                    "Продолжить?"
+                );
+                
+                if (!confirmed) {
+                    return;
+                }
+            }
+            
             const btn = document.querySelector('#datetime-edit-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
             
@@ -1139,7 +1159,8 @@
                 visit_id: editingVisitId,
                 client_id: curC,
                 new_date: newDate,
-                new_time: newTime
+                new_time: newTime,
+                is_course: isCourse
             });
         }
 
