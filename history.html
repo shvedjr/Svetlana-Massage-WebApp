@@ -377,7 +377,7 @@
         <div class="box-label" style="margin-bottom:5px;">Время</div>
         <input type="time" id="av-time" class="inp">
         <div class="box-label" style="margin-bottom:5px;">Цена за 1 сеанс (₽)</div>
-        <input type="number" id="va-price" class="inp" placeholder="Например: 2000" inputmode="numeric" required min="1">
+        <input type="number" id="va-price" class="inp" placeholder="Например: 2000" inputmode="numeric">
         <button class="save-btn" style="background:var(--pink);" onclick="saveNewVisit()">ЗАПИСАТЬ</button>
     </div>
 
@@ -479,8 +479,6 @@
             const archiveCount = params.get('archive_count') || 0;
             hasArchive = params.get('has_archive') === 'true';
             
-            console.log('📋 loadData: rawCompressed=', rawCompressed ? 'есть' : 'нет', 'archiveCount=', archiveCount);
-            
             if (rawCompressed) {
                 try {
                     const binary = atob(rawCompressed.replace(/-/g, '+').replace(/_/g, '/'));
@@ -488,11 +486,6 @@
                     const binData = new Uint8Array(charData);
                     const restored = pako.inflate(binData, { to: 'string' });
                     allClients = JSON.parse(restored);
-                    
-                    console.log('✅ Данные загружены:', allClients.length, 'клиентов');
-                    if (allClients.length > 0) {
-                        console.log('Первый клиент:', allClients[0].name, 'ID=', allClients[0].id);
-                    }
                     
                     // Показываем кнопку архива если есть архивные клиенты
                     if (hasArchive && archiveCount > 0) {
@@ -503,7 +496,7 @@
                     render();
                     checkDirectAccess();
                 } catch (e) { 
-                    console.error("❌ Ошибка распаковки:", e);
+                    console.error("Ошибка распаковки:", e);
                     requestDataFromBot();
                 }
             } else if (rawFull) {
@@ -886,7 +879,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:0.85rem; color:var(--hint); margin-bottom:5px;">
                             #${vNum} 
-                            <span class="edit-datetime" onclick="event.stopPropagation(); editVisitDateTime(${v.id}, '${vDate}', '${vTime}', \`${v.service}\`)" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
+                            <span class="edit-datetime" onclick="event.stopPropagation(); editVisitDateTime(${v.id}, '${vDate}', '${vTime}')" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
                                 📅 ${vDate} ⏰ ${vTime}
                             </span>
                         </div>
@@ -993,13 +986,8 @@
             if (!selectedService) return alert("Выберите тип услуги!");
             const date = document.getElementById('av-date').value;
             const time = document.getElementById('av-time').value;
-            const priceInput = document.getElementById('va-price');
-            const price = parseFloat(priceInput.value) || 0;
+            const price = document.getElementById('va-price').value || 0;
             if (!date || !time) return alert("Выберите дату и время!");
-            if (price <= 0) {
-                priceInput.focus();
-                return alert("⚠️ Укажите стоимость сеанса!\n\nЦена должна быть больше 0 ₽");
-            }
             
             // ПРОВЕРКА ДЛЯ КУРСА
             let skipWeekends = false;
@@ -1099,9 +1087,6 @@
             document.getElementById(id).style.display = 'block';
         }
 
-        let editingVisitId = null;
-        let editingVisitService = null; // Сохраняем тип услуги для проверки курса
-
         function closeAllEditBoxes() {
             document.getElementById('overlay').style.display = 'none';
             const boxes = ['edit-box', 'total-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box'];
@@ -1113,9 +1098,8 @@
             closeAllEditBoxes();
         }
 
-        function editVisitDateTime(visitId, currentDate, currentTime, service) {
+        function editVisitDateTime(visitId, currentDate, currentTime) {
             editingVisitId = visitId;
-            editingVisitService = service || '';
             document.getElementById('edit-visit-date').value = currentDate;
             document.getElementById('edit-visit-time').value = currentTime;
             openEditBox('datetime-edit-box');
@@ -1130,39 +1114,16 @@
                 return;
             }
             
-            // Проверяем, это курс?
-            const isCourse = editingVisitService && (editingVisitService.toUpperCase().includes('КУРС') || editingVisitService.includes('курс'));
-            let shiftCourse = null;
-            
-            if (isCourse) {
-                // Показываем диалог с выбором
-                const userChoice = confirm(
-                    "⚠️ ИЗМЕНЕНИЕ ДАТЫ КУРСА\n\n" +
-                    "Вы изменяете дату сеанса курса.\n\n" +
-                    "Сдвинуть все последующие сеансы курса на такое же время?\n\n" +
-                    "ОК - ДА, сдвинуть все последующие сеансы\n" +
-                    "ОТМЕНА - НЕТ, изменить только этот сеанс"
-                );
-                shiftCourse = userChoice; // true или false
-            }
-            
             const btn = document.querySelector('#datetime-edit-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
             
-            const payload = {
+            sendToBot({
                 action: 'edit_visit_datetime',
                 visit_id: editingVisitId,
                 client_id: curC,
                 new_date: newDate,
                 new_time: newTime
-            };
-            
-            // Добавляем флаг сдвига только если это курс
-            if (isCourse) {
-                payload.shift_course = shiftCourse;
-            }
-            
-            sendToBot(payload);
+            });
         }
 
         function openE(id, service, comm, res, date, status) { 
