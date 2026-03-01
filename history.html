@@ -305,7 +305,7 @@
         .st-btn.inactive { background: var(--secondary-bg); color: var(--hint); border-color: var(--border); box-shadow: none; opacity: 0.5; }
 
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(91, 77, 66, 0.5); z-index: 25; backdrop-filter: blur(4px); }
-        #edit-box, #total-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box, #datetime-edit-box { 
+        #edit-box, #total-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box, #datetime-edit-box, #price-edit-box { 
             display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg); 
             padding: 25px; border-radius: 35px 35px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); 
             z-index: 30; box-sizing: border-box; 
@@ -454,6 +454,13 @@
         <div class="box-label" style="margin-bottom:5px;">Время</div>
         <input type="time" id="edit-visit-time" class="inp">
         <button class="save-btn" onclick="saveVisitDateTime()">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
+    </div>
+
+    <div id="price-edit-box">
+        <h4 style="margin-top:0; color: var(--dark); text-align: center;">💰 Изменить стоимость сеанса</h4>
+        <div class="box-label" style="margin-bottom:5px;">Стоимость (₽)</div>
+        <input type="number" id="edit-visit-price" class="inp" placeholder="Например: 2000" inputmode="numeric" required min="1">
+        <button class="save-btn" onclick="saveVisitPrice()">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
     </div>
 
     <script>
@@ -883,7 +890,11 @@
                                 📅 ${vDate} ⏰ ${vTime}
                             </span>
                         </div>
-                        <div style="font-size:0.85rem; font-weight:700; color:var(--dark); opacity:0.6;">💰 ${displayPrice} ₽</div>
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--dark); opacity:0.6;">
+                            <span class="edit-price" onclick="event.stopPropagation(); editVisitPrice(${v.id}, ${displayPrice})" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
+                                💰 ${displayPrice} ₽
+                            </span>
+                        </div>
                     </div>
                     <div style="font-size:1.1rem; font-weight:800;">🛠 ${v.service}</div> 
                     <div style="margin-top:5px; font-size:0.95rem; color:var(--hint);">${v.comment||'—'}</div>
@@ -1094,7 +1105,7 @@
 
         function closeAllEditBoxes() {
             document.getElementById('overlay').style.display = 'none';
-            const boxes = ['edit-box', 'total-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box'];
+            const boxes = ['edit-box', 'total-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box', 'price-edit-box'];
             boxes.forEach(id => document.getElementById(id).style.display = 'none');
         }
 
@@ -1128,6 +1139,31 @@
                 client_id: curC,
                 new_date: newDate,
                 new_time: newTime
+            });
+        }
+
+        function editVisitPrice(visitId, currentPrice) {
+            editingVisitId = visitId;
+            document.getElementById('edit-visit-price').value = currentPrice;
+            openEditBox('price-edit-box');
+        }
+
+        function saveVisitPrice() {
+            const newPrice = parseFloat(document.getElementById('edit-visit-price').value);
+            
+            if (!newPrice || newPrice <= 0) {
+                alert("⚠️ Укажите стоимость сеанса!\n\nЦена должна быть больше 0 ₽");
+                return;
+            }
+            
+            const btn = document.querySelector('#price-edit-box .save-btn');
+            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+            
+            sendToBot({
+                action: 'edit_visit_price',
+                visit_id: editingVisitId,
+                client_id: curC,
+                new_price: newPrice
             });
         }
 
