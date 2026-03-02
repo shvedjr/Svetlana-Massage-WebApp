@@ -1023,6 +1023,17 @@
                 let vTime = v.date.split('T')[1] ? v.date.split('T')[1].substring(0, 5) : '00:00';
                 // Форматируем дату для отображения: DD.MM.YYYY
                 let vDateDisplay = vDate.split('-').reverse().join('.');
+                
+                // Определяем цвет для места проведения
+                let locationColor = 'var(--hint)';
+                if (v.location) {
+                    if (v.location.toUpperCase().includes('ДОМ')) {
+                        locationColor = '#9575cd'; // Лавандовый
+                    } else if (v.location.toUpperCase().includes('ВЫЕЗД')) {
+                        locationColor = '#e57373'; // Помидор
+                    }
+                }
+                
                 return `<div class="${cardClass}" onclick="openE(${v.id}, '${v.service.replace(/'/g, "\\'")}', '${(v.comment||"").replace(/'/g, "\\'")}', '${(v.result||"").replace(/'/g, "\\'")}', '${vDate}', '${v.status || 'planned'}')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:0.85rem; color:var(--hint); margin-bottom:5px;">
@@ -1031,7 +1042,7 @@
                                 📅 ${vDateDisplay} ⏰ ${vTime}
                             </span>
                         </div>
-                        <div style="font-size:0.85rem; font-weight:700; color:var(--dark); opacity:0.6;">
+                        <div style="font-size:1.45rem; font-weight:700; color:var(--dark); opacity:0.6;">
                             <span class="edit-price" onclick="event.stopPropagation(); editVisitPrice(${v.id}, ${displayPrice})" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
                                 💰 ${displayPrice} ₽
                             </span>
@@ -1041,10 +1052,10 @@
                     <div style="margin-top:5px; font-size:0.95rem; color:var(--hint);">${v.comment||'—'}</div>
                     ${resLine}
                     <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-size:0.75rem; font-weight:bold; color:${isDone?'var(--done-green)':(isCancelled?'var(--cancel-red)':'var(--hint)')}">
+                        <div style="font-size:1.28rem; font-weight:bold; color:${isDone?'var(--done-green)':(isCancelled?'var(--cancel-red)':'var(--hint)')}">
                             ${isDone ? '● ВЫПОЛНЕНО' : (isCancelled ? '● ОТМЕНЕНО' : '○ ОЖИДАЕТ')}
                         </div>
-                        ${v.location ? `<div style="font-size:0.75rem; font-weight:bold; color:var(--hint);">📍 ${v.location}</div>` : ''}
+                        ${v.location ? `<div style="font-size:1.28rem; font-weight:bold; color:${locationColor};">📍 ${v.location}</div>` : ''}
                     </div>
                 </div>`;
             }).join('');
