@@ -476,6 +476,7 @@
         let curService = "";
         let selectedService = "";
         let editingVisitId = null; // Для редактирования даты/времени
+        let editingVisitService = ""; // Для определения курса при редактировании
         let archiveLoaded = false; // Флаг загрузки архива
         let hasArchive = false; // Есть ли архивные клиенты
 
@@ -884,7 +885,7 @@
                 let vTime = v.date.split('T')[1] ? v.date.split('T')[1].substring(0, 5) : '00:00';
                 // Форматируем дату для отображения: DD.MM.YYYY
                 let vDateDisplay = vDate.split('-').reverse().join('.');
-                return `<div class="${cardClass}" onclick="openE(${v.id}, \`${v.service}\`, \`${(v.comment||"").replace(/`/g, "'")}\`, \`${(v.result||"").replace(/`/g, "'")}\`, \`${vDate}\`, '${v.status || 'planned'}')">
+                return `<div class="${cardClass}" onclick="openE(${v.id}, '${v.service.replace(/'/g, "\\'")}', '${(v.comment||"").replace(/'/g, "\\'")}', '${(v.result||"").replace(/'/g, "\\'")}', '${vDate}', '${v.status || 'planned'}')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:0.85rem; color:var(--hint); margin-bottom:5px;">
                             #${vNum} 
@@ -1115,8 +1116,9 @@
             closeAllEditBoxes();
         }
 
-        function editVisitDateTime(visitId, currentDate, currentTime) {
+        function editVisitDateTime(visitId, currentDate, currentTime, service) {
             editingVisitId = visitId;
+            editingVisitService = service || "";
             document.getElementById('edit-visit-date').value = currentDate;
             document.getElementById('edit-visit-time').value = currentTime;
             openEditBox('datetime-edit-box');
@@ -1131,6 +1133,29 @@
                 return;
             }
             
+            // Проверяем, является ли визит частью курса
+            const isCourse = editingVisitService.toLowerCase().includes('курс');
+            
+            // Если это курс, спрашиваем подтверждение
+            if (isCourse) {
+                const confirmed = confirm("🔄 Это сеанс курса!\n\nСдвинуть все последующие сеансы курса на новую дату?\n\n✅ ДА - сдвинуть все последующие сеансы\n❌ НЕТ - изменить только этот сеанс");
+                if (!confirmed) {
+                    // Пользователь отказался от автосдвига
+                    const btn = document.querySelector('#datetime-edit-box .save-btn');
+                    btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+                    
+                    sendToBot({
+                        action: 'edit_visit_datetime',
+                        visit_id: editingVisitId,
+                        client_id: curC,
+                        new_date: newDate,
+                        new_time: newTime,
+                        is_course: false
+                    });
+                    return;
+                }
+            }
+            
             const btn = document.querySelector('#datetime-edit-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
             
@@ -1139,7 +1164,8 @@
                 visit_id: editingVisitId,
                 client_id: curC,
                 new_date: newDate,
-                new_time: newTime
+                new_time: newTime,
+                is_course: isCourse
             });
         }
 
