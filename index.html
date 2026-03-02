@@ -35,18 +35,6 @@
                 text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
             }
             
-            .service-btn {
-                background: var(--input-bg);
-                border-color: #3a3a3a;
-                color: var(--text-dark);
-            }
-            
-            .service-btn.active {
-                background: #d4869c;
-                color: #1a1a1a;
-                border-color: #d4869c;
-            }
-            
             .child-section {
                 background: rgba(212, 134, 156, 0.1);
                 border-color: #d4869c;
@@ -76,15 +64,6 @@
         body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; min-height: 100vh; color: var(--text-dark); }
         .brand-header { text-align: center; font-family: 'Caveat', cursive; font-size: 2.2rem; color: #e09fb0; margin-bottom: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
         .card { background: var(--white); border-radius: 30px; padding: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(242, 186, 201, 0.3); }
-        .grid-services { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        
-        .service-btn { 
-            background: var(--input-bg); 
-            border: 2px solid var(--input-border); 
-            color: var(--text-dark);
-            padding: 16px 5px; border-radius: 18px; text-align: center; font-weight: 800; cursor: pointer; transition: all 0.2s ease; 
-        }
-        .service-btn.active { background: var(--accent-pink); color: white; border-color: var(--accent-pink); box-shadow: 0 4px 12px rgba(242, 186, 201, 0.4); }
         
         .child-section { background: rgba(242, 186, 201, 0.05); padding: 18px; border-radius: 22px; margin-bottom: 18px; border: 2px dashed var(--accent-pink); }
         .input-group { margin-bottom: 18px; }
@@ -119,12 +98,28 @@
 <body>
     <div class="brand-header">Света детский массаж</div>
     <div class="card">
-        <div class="grid-services">
-            <div class="service-btn" onclick="select(this)">Курс</div>
-            <div class="service-btn" onclick="select(this)">Консультация</div>
-            <div class="service-btn" onclick="select(this)">Взрослый</div>
-            <div class="service-btn active" onclick="select(this)">Детский</div>
+        <div class="input-group">
+            <label>Услуга <span style="color: red;">*</span></label>
+            <select id="service" onchange="handleServiceChange()" required>
+                <option value="">-- Выберите услугу --</option>
+                <option value="Курс">Курс</option>
+                <option value="Курс Взрослый">Курс Взрослый</option>
+                <option value="Разовый сеанс">Разовый сеанс</option>
+                <option value="Разовый сеанс Взрослый">Разовый сеанс Взрослый</option>
+                <option value="Консультация онлайн">Консультация онлайн</option>
+                <option value="Консультация оффлайн">Консультация оффлайн</option>
+            </select>
         </div>
+        
+        <div class="input-group" id="location_block">
+            <label>Место проведения <span style="color: red;">*</span></label>
+            <select id="location" required>
+                <option value="">-- Выберите место --</option>
+                <option value="Дом">Дом</option>
+                <option value="Выезд">Выезд</option>
+            </select>
+        </div>
+        
         <div class="input-group"><label>Телефон</label><input type="tel" id="phone" placeholder="+79001112233" maxlength="12"></div>
         <div class="input-group"><label id="p_label">Имя родителя</label><input type="text" id="p_name" placeholder="Введите имя"></div>
         <div id="child_block" class="child-section">
@@ -228,19 +223,40 @@
             }
         });
         
-        function select(el) {
-            document.querySelectorAll('.service-btn').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            const isV = el.innerText === "Взрослый";
-            document.getElementById('child_block').style.display = isV ? "none" : "block";
-            document.getElementById('p_label').innerText = isV ? "ФИО Клиента" : "Имя родителя";
+        function handleServiceChange() {
+            const serviceSelect = document.getElementById('service');
+            const locationBlock = document.getElementById('location_block');
+            const locationSelect = document.getElementById('location');
+            const childBlock = document.getElementById('child_block');
+            const pLabel = document.getElementById('p_label');
+            
+            const selectedService = serviceSelect.value;
+            
+            // Показываем/скрываем блок места проведения
+            if (selectedService === 'Консультация оффлайн') {
+                locationBlock.style.display = 'none';
+                locationSelect.removeAttribute('required');
+                locationSelect.value = '';
+            } else if (selectedService) {
+                locationBlock.style.display = 'block';
+                locationSelect.setAttribute('required', 'required');
+            }
+            
+            // Показываем/скрываем блок ребёнка
+            const isAdult = selectedService.includes('Взрослый') || selectedService === 'Консультация оффлайн';
+            childBlock.style.display = isAdult ? 'none' : 'block';
+            pLabel.innerText = isAdult ? 'ФИО Клиента' : 'Имя родителя';
         }
 
         function getDuration(service, ageStr) {
             const s = service.toLowerCase();
             const age = ageStr.toLowerCase();
-            if (s === "консультация" || s === "взрослый") return 60;
-            if (s === "курс" || s === "детский") {
+            
+            // Консультации и взрослые - 60 минут
+            if (s.includes('консультация') || s.includes('взрослый')) return 60;
+            
+            // Для детских услуг определяем по возрасту
+            if (s.includes('курс') || s.includes('разовый')) {
                 const hasYear = age.includes('год') || age.includes('лет');
                 const hasInfantUnits = age.includes('мес') || age.includes('нед') || age.includes('дн');
                 const numMatch = age.match(/\d+/);
@@ -255,13 +271,28 @@
 
         function send() {
             const btn = document.getElementById('submitBtn');
-            const serviceName = document.querySelector('.service-btn.active').innerText;
+            const serviceSelect = document.getElementById('service');
+            const serviceName = serviceSelect.value;
+            const locationValue = document.getElementById('location').value;
             const ageValue = document.getElementById('c_age').value.trim();
             const rawAddr = document.getElementById('addr').value.trim();
             const dateTimeValue = document.getElementById('dt').value;
             
+            // Проверка выбора услуги
+            if (!serviceName) {
+                alert('⚠️ Пожалуйста, выберите услугу');
+                return;
+            }
+            
+            // Проверка места проведения (кроме Консультация оффлайн)
+            if (serviceName !== 'Консультация оффлайн' && !locationValue) {
+                alert('⚠️ Пожалуйста, выберите место проведения');
+                return;
+            }
+            
             const d = { 
-                service: serviceName, 
+                service: serviceName,
+                location: locationValue || null, 
                 parent_name: document.getElementById('p_name').value.trim(), 
                 phone: document.getElementById('phone').value.trim(), 
                 address: rawAddr,
@@ -313,7 +344,8 @@
             }
             
             // Обязательные поля для детского массажа
-            if (serviceName !== "Взрослый") {
+            const isAdultService = serviceName.includes('Взрослый') || serviceName === 'Консультация оффлайн';
+            if (!isAdultService) {
                 if (!d.child_name) {
                     tg.showAlert("❌ Укажите имя ребенка");
                     return;
@@ -325,7 +357,8 @@
             }
             
             // ПРОВЕРКА ДЛЯ КУРСА
-            if (serviceName === "Курс") {
+            const isCourse = serviceName.includes('Курс');
+            if (isCourse) {
                 const selectedDate = new Date(dateTimeValue);
                 const dayOfWeek = selectedDate.getDay(); // 0 = воскресенье, 1 = понедельник
                 const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
