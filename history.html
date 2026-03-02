@@ -1177,20 +1177,29 @@
                     v.status !== 'Отменен'
                 ).length;
                 
-                // Проверяем, попадают ли последующие сеансы на выходные
-                const selectedDate = new Date(newDate);
+                // Проверяем, попадут ли переносимые сеансы на выходные
+                // Симулируем перенос подряд и проверяем каждый день
                 let hasWeekends = false;
+                let currentCheckDate = new Date(newDate);
                 
-                // Проверяем следующие N дней, где N = количество переносимых сеансов
+                console.log(`Проверка выходных: начальная дата ${newDate}, сеансов для переноса: ${nextVisitsCount}`);
+                
                 for (let i = 1; i <= nextVisitsCount; i++) {
-                    const checkDate = new Date(selectedDate);
-                    checkDate.setDate(checkDate.getDate() + i);
-                    const dayOfWeek = checkDate.getDay();
+                    currentCheckDate = new Date(currentCheckDate);
+                    currentCheckDate.setDate(currentCheckDate.getDate() + 1);
+                    const dayOfWeek = currentCheckDate.getDay();
+                    
+                    console.log(`День ${i}: ${currentCheckDate.toISOString().split('T')[0]}, день недели: ${dayOfWeek}`);
+                    
+                    // 0 = воскресенье, 6 = суббота
                     if (dayOfWeek === 0 || dayOfWeek === 6) {
                         hasWeekends = true;
+                        console.log(`Найден выходной день!`);
                         break;
                     }
                 }
+                
+                console.log(`Результат проверки: hasWeekends = ${hasWeekends}`);
                 
                 // Если есть выходные, спрашиваем схему переноса
                 let skipWeekends = false;
