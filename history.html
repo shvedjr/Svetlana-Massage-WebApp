@@ -84,8 +84,8 @@
         
         /* Стили для тёмной темы Telegram через класс */
         html.dark-theme {
-            --bg: #2d1b2e; /* Темно-розовый фон */
-            --secondary-bg: #ffffff; /* Белый фон для блоков */
+            --bg: #000000; /* Чёрный основной фон */
+            --secondary-bg: #2d1b2e; /* Темно-розовый для блоков */
             --dark: #e0e0e0; 
             --border: #2c2c2c; 
             --hint: #888888;
@@ -121,21 +121,39 @@
             text-shadow: 0 0 8px rgba(204, 204, 204, 0.6), 0 0 15px rgba(204, 204, 204, 0.3);
         }
         
-        /* Элементы поиска и фильтров - с розовым свечением */
+        /* Элементы поиска и фильтров - с розовым свечением, заливка как у блоков */
         html.dark-theme #search {
             background: var(--secondary-bg);
             border-color: var(--pink);
+            color: var(--dark);
             box-shadow: 0 0 15px rgba(255, 143, 163, 0.5), 0 4px 12px rgba(255, 143, 163, 0.3);
         }
         html.dark-theme .f-btn, html.dark-theme .s-btn, html.dark-theme .client-counter {
             background: var(--secondary-bg);
             border-color: var(--pink);
+            color: var(--dark);
             box-shadow: 0 0 12px rgba(255, 143, 163, 0.4), 0 4px 10px rgba(255, 143, 163, 0.2);
         }
+        /* Активные кнопки фильтров - розовая заливка как было */
+        html.dark-theme .f-btn.active {
+            background: var(--pink);
+            color: white;
+        }
+        html.dark-theme .s-btn.active {
+            background: var(--secondary-bg);
+            border-color: var(--pink);
+            color: var(--pink);
+        }
         
-        /* Модальное окно - парящий эффект с розовым свечением */
+        /* Модальное окно карточки - ЧЁРНЫЙ фон с розовым свечением */
+        html.dark-theme .m-container {
+            background: #000000 !important;
+            box-shadow: 0 10px 40px rgba(255, 143, 163, 0.5), 0 5px 20px rgba(255, 143, 163, 0.3);
+        }
+        
+        /* Блоки внутри карточки - темно-розовая заливка с розовым свечением */
         html.dark-theme .header-card, html.dark-theme .v-card, html.dark-theme .total-card { 
-            background: var(--secondary-bg); 
+            background: #2d1b2e; 
             border: 1px solid var(--pink);
             box-shadow: 0 10px 40px rgba(255, 143, 163, 0.5), 0 5px 20px rgba(255, 143, 163, 0.3);
         }
