@@ -82,6 +82,41 @@
             .money-btn { box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         }
         
+        /* Стили для тёмной темы Telegram через класс */
+        html.dark-theme {
+            --bg: #121212; 
+            --secondary-bg: #1e1e1e; 
+            --dark: #e0e0e0; 
+            --border: #2c2c2c; 
+            --hint: #888888;
+            --pink: #ff8fa3;
+        }
+        html.dark-theme body { background-color: var(--bg); color: var(--dark); }
+        html.dark-theme .item, html.dark-theme .header-card, html.dark-theme .v-card, html.dark-theme .info-box, html.dark-theme .total-card { 
+            background: var(--secondary-bg); 
+            border-color: var(--border); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+        }
+        html.dark-theme .back-btn {
+            background: #252525;
+            border-color: var(--pink);
+            color: #000000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        html.dark-theme .del-btn {
+            background: #252525;
+            border-color: var(--pink);
+            color: #000000;
+        }
+        html.dark-theme .box-value, html.dark-theme .phone-value-big, html.dark-theme .client-name { color: #000000; }
+        html.dark-theme .box-label { color: #999999; }
+        html.dark-theme .child-info { color: #000000; }
+        html.dark-theme .addr-value { color: #000000; }
+        html.dark-theme .phone-info { color: #000000; }
+        html.dark-theme .action-icon {
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        }
+        
         body { 
             font-family: -apple-system, sans-serif; 
             background-color: var(--bg);
@@ -472,6 +507,11 @@
     <script>
         var tg = window.Telegram.WebApp; 
         tg.expand();
+        
+        // Применяем стили для тёмной темы Telegram
+        if (tg.colorScheme === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
         
         var allClients = []; 
         var currentMode = 'all';
