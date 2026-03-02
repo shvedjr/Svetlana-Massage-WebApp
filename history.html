@@ -1154,6 +1154,41 @@
                     });
                     return;
                 }
+                
+                // Проверяем, попадают ли последующие сеансы на выходные
+                const selectedDate = new Date(newDate);
+                let hasWeekends = false;
+                
+                // Проверяем следующие 10 дней (максимум для курса)
+                for (let i = 1; i <= 10; i++) {
+                    const checkDate = new Date(selectedDate);
+                    checkDate.setDate(checkDate.getDate() + i);
+                    const dayOfWeek = checkDate.getDay();
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        hasWeekends = true;
+                        break;
+                    }
+                }
+                
+                // Если есть выходные, спрашиваем схему переноса
+                let skipWeekends = false;
+                if (hasWeekends) {
+                    skipWeekends = confirm("📅 Схема переноса сеансов:\n\n✅ ДА - пропускать выходные (схема 5-2-5)\n❌ НЕТ - переносить подряд, включая выходные");
+                }
+                
+                const btn = document.querySelector('#datetime-edit-box .save-btn');
+                btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+                
+                sendToBot({
+                    action: 'edit_visit_datetime',
+                    visit_id: editingVisitId,
+                    client_id: curC,
+                    new_date: newDate,
+                    new_time: newTime,
+                    is_course: true,
+                    skip_weekends: skipWeekends
+                });
+                return;
             }
             
             const btn = document.querySelector('#datetime-edit-box .save-btn');
@@ -1165,7 +1200,7 @@
                 client_id: curC,
                 new_date: newDate,
                 new_time: newTime,
-                is_course: isCourse
+                is_course: false
             });
         }
 
