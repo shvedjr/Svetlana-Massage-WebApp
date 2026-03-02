@@ -1155,12 +1155,34 @@
                     return;
                 }
                 
+                // Находим текущего клиента и его визиты
+                const currentClient = allClients.find(c => c.id === curC);
+                if (!currentClient) {
+                    alert("Ошибка: клиент не найден");
+                    return;
+                }
+                
+                // Находим текущий визит
+                const currentVisit = currentClient.visits.find(v => v.id === editingVisitId);
+                if (!currentVisit) {
+                    alert("Ошибка: визит не найден");
+                    return;
+                }
+                
+                // Считаем количество последующих сеансов того же курса
+                const currentVisitDate = new Date(currentVisit.date);
+                const nextVisitsCount = currentClient.visits.filter(v => 
+                    v.service === editingVisitService && 
+                    new Date(v.date) > currentVisitDate &&
+                    v.status !== 'Отменен'
+                ).length;
+                
                 // Проверяем, попадают ли последующие сеансы на выходные
                 const selectedDate = new Date(newDate);
                 let hasWeekends = false;
                 
-                // Проверяем следующие 10 дней (максимум для курса)
-                for (let i = 1; i <= 10; i++) {
+                // Проверяем следующие N дней, где N = количество переносимых сеансов
+                for (let i = 1; i <= nextVisitsCount; i++) {
                     const checkDate = new Date(selectedDate);
                     checkDate.setDate(checkDate.getDate() + i);
                     const dayOfWeek = checkDate.getDay();
