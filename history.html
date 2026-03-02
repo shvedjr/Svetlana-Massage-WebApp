@@ -857,15 +857,9 @@
             var formattedPhone = cleanPhone ? '+' + cleanPhone : '—';
             
             var plan = c.contract_sum || 0;
-            var sortedAll = [...c.visits].sort((a,b) => new Date(a.date) - new Date(b.date));
-            var groups = [];
-            for (let i = 0; i < sortedAll.length; i += 10) {
-                groups.push(sortedAll.slice(i, i + 10));
-            }
-            var finalVisits = [];
-            for (let i = groups.length - 1; i >= 0; i--) {
-                finalVisits = finalVisits.concat(groups[i]);
-            }
+            // Просто сортируем все визиты по дате в прямом порядке
+            var finalVisits = [...c.visits].sort((a,b) => new Date(a.date) - new Date(b.date));
+            var sortedAll = finalVisits; // Для совместимости с vNum
             var vHtml = finalVisits.map((v) => {
                 // ЦЕНА БЕРЕТСЯ ТОЛЬКО ИЗ БАЗЫ (price), если нет - показываем 0
                 let displayPrice = v.price || 0;
