@@ -93,15 +93,15 @@
         }
         html.dark-theme body { background-color: var(--bg); color: var(--dark); }
         
-        /* Блоки клиентов - парящий эффект с розовым свечением */
+        /* Блоки клиентов - парящий эффект с розовым свечением (уменьшено на 30%) */
         html.dark-theme .item { 
             background: var(--secondary-bg); 
             border: 1px solid var(--pink);
-            box-shadow: 0 8px 25px rgba(255, 143, 163, 0.4), 0 4px 12px rgba(255, 143, 163, 0.3);
+            box-shadow: 0 8px 25px rgba(255, 143, 163, 0.28), 0 4px 12px rgba(255, 143, 163, 0.21);
             transform: translateY(-2px);
         }
         html.dark-theme .item:hover {
-            box-shadow: 0 12px 35px rgba(255, 143, 163, 0.6), 0 6px 15px rgba(255, 143, 163, 0.4);
+            box-shadow: 0 12px 35px rgba(255, 143, 163, 0.42), 0 6px 15px rgba(255, 143, 163, 0.28);
             transform: translateY(-4px);
         }
         
@@ -118,18 +118,20 @@
             color: #cccccc;
         }
         
-        /* Элементы поиска и фильтров - с розовым свечением, заливка как у блоков */
+        /* Поиск - белая заливка с розовым свечением (уменьшено на 30%) */
         html.dark-theme #search {
-            background: var(--secondary-bg);
+            background: #ffffff;
             border-color: var(--pink);
-            color: var(--dark);
-            box-shadow: 0 0 15px rgba(255, 143, 163, 0.5), 0 4px 12px rgba(255, 143, 163, 0.3);
+            color: #000000;
+            box-shadow: 0 0 15px rgba(255, 143, 163, 0.35), 0 4px 12px rgba(255, 143, 163, 0.21);
         }
+        
+        /* Элементы фильтров - с розовым свечением (уменьшено на 30%) */
         html.dark-theme .f-btn, html.dark-theme .s-btn, html.dark-theme .client-counter {
             background: var(--secondary-bg);
             border-color: var(--pink);
             color: var(--dark);
-            box-shadow: 0 0 12px rgba(255, 143, 163, 0.4), 0 4px 10px rgba(255, 143, 163, 0.2);
+            box-shadow: 0 0 12px rgba(255, 143, 163, 0.28), 0 4px 10px rgba(255, 143, 163, 0.14);
         }
         /* Активные кнопки фильтров - розовая заливка как было */
         html.dark-theme .f-btn.active {
@@ -142,17 +144,17 @@
             color: var(--pink);
         }
         
-        /* Модальное окно карточки - ЧЁРНЫЙ фон с розовым свечением */
+        /* Модальное окно карточки - темно-розовый фон с розовым свечением (уменьшено на 30%) */
         html.dark-theme .m-container {
-            background: #000000 !important;
-            box-shadow: 0 10px 40px rgba(255, 143, 163, 0.5), 0 5px 20px rgba(255, 143, 163, 0.3);
+            background: #2d1b2e !important;
+            box-shadow: 0 10px 40px rgba(255, 143, 163, 0.35), 0 5px 20px rgba(255, 143, 163, 0.21);
         }
         
-        /* Блоки внутри карточки - темно-розовая заливка с розовым свечением */
+        /* Блоки внутри карточки - темно-розовая заливка с розовым свечением (уменьшено на 30%) */
         html.dark-theme .header-card, html.dark-theme .v-card, html.dark-theme .total-card { 
             background: #2d1b2e; 
             border: 1px solid var(--pink);
-            box-shadow: 0 10px 40px rgba(255, 143, 163, 0.5), 0 5px 20px rgba(255, 143, 163, 0.3);
+            box-shadow: 0 10px 40px rgba(255, 143, 163, 0.35), 0 5px 20px rgba(255, 143, 163, 0.21);
         }
         
         /* Кнопки НАЗАД и Удалить - белая заливка */
@@ -175,9 +177,9 @@
             border: 1px solid var(--pink);
             box-shadow: 0 4px 12px rgba(255, 143, 163, 0.3);
         }
-        /* Блок кошелёк - чёрная заливка как фон модального окна */
+        /* Блок кошелёк - темно-розовая заливка как фон модального окна */
         html.dark-theme .info-box.b-gold { 
-            background: #000000; 
+            background: #2d1b2e; 
             border-color: var(--pink);
             box-shadow: 0 4px 15px rgba(255, 143, 163, 0.4);
         }
@@ -198,9 +200,9 @@
             color: #000000;
         }
         
-        /* Иконки - белое свечение */
+        /* Иконки - белое свечение (уменьшено на 35%) */
         html.dark-theme .action-icon {
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.6));
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.65)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.39));
         }
         
         body { 
