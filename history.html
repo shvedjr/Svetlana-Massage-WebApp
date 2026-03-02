@@ -1128,6 +1128,8 @@
             const newDate = document.getElementById('edit-visit-date').value;
             const newTime = document.getElementById('edit-visit-time').value;
             
+            console.log(`saveVisitDateTime: newDate=${newDate}, newTime=${newTime}`);
+            
             if (!newDate || !newTime) {
                 alert("Укажите дату и время!");
                 return;
@@ -1135,10 +1137,13 @@
             
             // Проверяем, является ли визит частью курса
             const isCourse = editingVisitService.toLowerCase().includes('курс');
+            console.log(`isCourse=${isCourse}, editingVisitService="${editingVisitService}"`);
             
             // Если это курс, спрашиваем подтверждение
             if (isCourse) {
                 const confirmed = confirm("🔄 Это сеанс курса!\n\nСдвинуть все последующие сеансы курса на новую дату?\n\n✅ ДА - сдвинуть все последующие сеансы\n❌ НЕТ - изменить только этот сеанс");
+                console.log(`Подтверждение автосдвига: ${confirmed}`);
+                
                 if (!confirmed) {
                     // Пользователь отказался от автосдвига
                     const btn = document.querySelector('#datetime-edit-box .save-btn');
@@ -1157,6 +1162,8 @@
                 
                 // Находим текущего клиента и его визиты
                 const currentClient = allClients.find(c => c.id === curC);
+                console.log(`currentClient found: ${!!currentClient}`);
+                
                 if (!currentClient) {
                     alert("Ошибка: клиент не найден");
                     return;
@@ -1164,6 +1171,8 @@
                 
                 // Находим текущий визит
                 const currentVisit = currentClient.visits.find(v => v.id === editingVisitId);
+                console.log(`currentVisit found: ${!!currentVisit}, editingVisitId=${editingVisitId}`);
+                
                 if (!currentVisit) {
                     alert("Ошибка: визит не найден");
                     return;
@@ -1177,12 +1186,12 @@
                     v.status !== 'Отменен'
                 ).length;
                 
+                console.log(`Проверка выходных: начальная дата ${newDate}, сеансов для переноса: ${nextVisitsCount}`);
+                
                 // Проверяем, попадут ли переносимые сеансы на выходные
                 // Симулируем перенос подряд и проверяем каждый день
                 let hasWeekends = false;
                 let currentCheckDate = new Date(newDate);
-                
-                console.log(`Проверка выходных: начальная дата ${newDate}, сеансов для переноса: ${nextVisitsCount}`);
                 
                 for (let i = 1; i <= nextVisitsCount; i++) {
                     currentCheckDate = new Date(currentCheckDate);
@@ -1205,6 +1214,7 @@
                 let skipWeekends = false;
                 if (hasWeekends) {
                     skipWeekends = confirm("📅 Схема переноса сеансов:\n\n✅ ДА - пропускать выходные (схема 5-2-5)\n❌ НЕТ - переносить подряд, включая выходные");
+                    console.log(`Выбор пользователя: skipWeekends = ${skipWeekends}`);
                 }
                 
                 const btn = document.querySelector('#datetime-edit-box .save-btn');
