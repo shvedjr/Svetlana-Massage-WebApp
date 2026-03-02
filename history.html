@@ -105,20 +105,17 @@
             transform: translateY(-4px);
         }
         
-        /* Имя клиента и ребёнка - белый с свечением */
+        /* Имя клиента и ребёнка - белый без свечения */
         html.dark-theme .client-name {
             color: #ffffff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
         }
         html.dark-theme .child-info {
             color: #ffffff;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 15px rgba(255, 255, 255, 0.3);
         }
         
-        /* Телефон - светло-серый с свечением */
+        /* Телефон - светло-серый без свечения */
         html.dark-theme .phone-info {
             color: #cccccc;
-            text-shadow: 0 0 8px rgba(204, 204, 204, 0.6), 0 0 15px rgba(204, 204, 204, 0.3);
         }
         
         /* Элементы поиска и фильтров - с розовым свечением, заливка как у блоков */
@@ -178,10 +175,16 @@
             border: 1px solid var(--pink);
             box-shadow: 0 4px 12px rgba(255, 143, 163, 0.3);
         }
+        /* Блок кошелёк - чёрная заливка как фон модального окна */
         html.dark-theme .info-box.b-gold { 
-            background: #ffffff; 
+            background: #000000; 
             border-color: var(--pink);
             box-shadow: 0 4px 15px rgba(255, 143, 163, 0.4);
+        }
+        /* Текст в блоке кошелёк - белый */
+        html.dark-theme .b-gold .box-value,
+        html.dark-theme .b-gold .box-label {
+            color: #ffffff;
         }
         
         /* Текст данных клиента внутри карточки - чёрный */
