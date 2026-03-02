@@ -126,9 +126,9 @@
             box-shadow: 0 0 15px rgba(255, 143, 163, 0.35), 0 4px 12px rgba(255, 143, 163, 0.21);
         }
         
-        /* Элементы фильтров - с розовым свечением (уменьшено на 30%) */
+        /* Элементы фильтров - чёрная заливка с розовым свечением (уменьшено на 30%) */
         html.dark-theme .f-btn, html.dark-theme .s-btn, html.dark-theme .client-counter {
-            background: var(--secondary-bg);
+            background: #000000;
             border-color: var(--pink);
             color: var(--dark);
             box-shadow: 0 0 12px rgba(255, 143, 163, 0.28), 0 4px 10px rgba(255, 143, 163, 0.14);
@@ -150,11 +150,11 @@
             box-shadow: 0 10px 40px rgba(255, 143, 163, 0.35), 0 5px 20px rgba(255, 143, 163, 0.21);
         }
         
-        /* Блоки внутри карточки - темно-розовая заливка с розовым свечением (уменьшено на 30%) */
+        /* Блоки внутри карточки - темно-розовая заливка с розовым свечением (уменьшено на 50%) */
         html.dark-theme .header-card, html.dark-theme .v-card, html.dark-theme .total-card { 
             background: #2d1b2e; 
             border: 1px solid var(--pink);
-            box-shadow: 0 10px 40px rgba(255, 143, 163, 0.35), 0 5px 20px rgba(255, 143, 163, 0.21);
+            box-shadow: 0 10px 40px rgba(255, 143, 163, 0.25), 0 5px 20px rgba(255, 143, 163, 0.15);
         }
         
         /* Кнопки НАЗАД и Удалить - белая заливка */
@@ -171,17 +171,17 @@
             box-shadow: 0 4px 15px rgba(255, 143, 163, 0.4);
         }
         
-        /* Блоки данных клиента - белая заливка */
+        /* Блоки данных клиента - белая заливка (уменьшено свечение на 50%) */
         html.dark-theme .info-box { 
             background: #ffffff;
             border: 1px solid var(--pink);
-            box-shadow: 0 4px 12px rgba(255, 143, 163, 0.3);
+            box-shadow: 0 4px 12px rgba(255, 143, 163, 0.15);
         }
-        /* Блок кошелёк - темно-розовая заливка как фон модального окна */
+        /* Блок кошелёк - темно-розовая заливка как фон модального окна (уменьшено свечение на 50%) */
         html.dark-theme .info-box.b-gold { 
             background: #2d1b2e; 
             border-color: var(--pink);
-            box-shadow: 0 4px 15px rgba(255, 143, 163, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 143, 163, 0.2);
         }
         /* Текст в блоке кошелёк - белый */
         html.dark-theme .b-gold .box-value,
@@ -200,9 +200,9 @@
             color: #000000;
         }
         
-        /* Иконки - белое свечение (уменьшено на 35%) */
+        /* Иконки - белое свечение (уменьшено до 0.4) */
         html.dark-theme .action-icon {
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.65)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.39));
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
         }
         
         body { 
