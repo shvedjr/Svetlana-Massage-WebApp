@@ -1180,12 +1180,21 @@
                 
                 // Считаем количество последующих сеансов того же курса
                 const currentVisitDate = new Date(currentVisit.date);
+                
+                console.log(`Все визиты клиента:`, currentClient.visits.map(v => ({
+                    id: v.id,
+                    service: v.service,
+                    date: v.date,
+                    status: v.status
+                })));
+                
                 const nextVisitsCount = currentClient.visits.filter(v => 
                     v.service === editingVisitService && 
                     new Date(v.date) > currentVisitDate &&
                     v.status !== 'Отменен'
                 ).length;
                 
+                console.log(`Фильтр: service="${editingVisitService}", дата > ${currentVisitDate.toISOString()}, статус != Отменен`);
                 console.log(`Проверка выходных: начальная дата ${newDate}, сеансов для переноса: ${nextVisitsCount}`);
                 
                 // Проверяем, попадут ли переносимые сеансы на выходные
