@@ -84,8 +84,8 @@
         
         /* Стили для тёмной темы Telegram через класс */
         html.dark-theme {
-            --bg: #000000; /* Чёрный основной фон */
-            --secondary-bg: #2d1b2e; /* Темно-розовый для блоков */
+            --bg: #2d1b2e; /* Темно-розовый основной фон */
+            --secondary-bg: #000000; /* Чёрный для блоков */
             --dark: #e0e0e0; 
             --border: #2c2c2c; 
             --hint: #888888;
@@ -144,15 +144,15 @@
             color: var(--pink);
         }
         
-        /* Модальное окно карточки - темно-розовый фон с розовым свечением (уменьшено на 30%) */
+        /* Модальное окно карточки - чёрный фон с розовым свечением (уменьшено на 30%) */
         html.dark-theme .m-container {
-            background: #2d1b2e !important;
+            background: #000000 !important;
             box-shadow: 0 10px 40px rgba(255, 143, 163, 0.35), 0 5px 20px rgba(255, 143, 163, 0.21);
         }
         
-        /* Блоки внутри карточки - темно-розовая заливка с розовым свечением (уменьшено на 50%) */
+        /* Блоки внутри карточки - чёрная заливка с розовым свечением (уменьшено на 50%) */
         html.dark-theme .header-card, html.dark-theme .v-card, html.dark-theme .total-card { 
-            background: #2d1b2e; 
+            background: #000000; 
             border: 1px solid var(--pink);
             box-shadow: 0 10px 40px rgba(255, 143, 163, 0.25), 0 5px 20px rgba(255, 143, 163, 0.15);
         }
@@ -177,9 +177,9 @@
             border: 1px solid var(--pink);
             box-shadow: 0 4px 12px rgba(255, 143, 163, 0.15);
         }
-        /* Блок кошелёк - темно-розовая заливка как фон модального окна (уменьшено свечение на 50%) */
+        /* Блок кошелёк - чёрная заливка (уменьшено свечение на 50%) */
         html.dark-theme .info-box.b-gold { 
-            background: #2d1b2e; 
+            background: #000000; 
             border-color: var(--pink);
             box-shadow: 0 4px 15px rgba(255, 143, 163, 0.2);
         }
