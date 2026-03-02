@@ -857,7 +857,7 @@
             var formattedPhone = cleanPhone ? '+' + cleanPhone : '—';
             
             var plan = c.contract_sum || 0;
-            var sortedAll = [...c.visits].sort((a,b) => a.id - b.id);
+            var sortedAll = [...c.visits].sort((a,b) => new Date(a.date) - new Date(b.date));
             var groups = [];
             for (let i = 0; i < sortedAll.length; i += 10) {
                 groups.push(sortedAll.slice(i, i + 10));
