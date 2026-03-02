@@ -1181,18 +1181,23 @@
                 // Считаем количество последующих сеансов того же курса
                 const currentVisitDate = new Date(currentVisit.date);
                 
+                // Извлекаем базовое название курса (например, "Курс 1" из "Курс 1: 6/10")
+                const courseBaseName = editingVisitService.split(':')[0].trim();
+                console.log(`Базовое название курса: "${courseBaseName}"`);
+                
                 console.log(`Всего визитов клиента: ${currentClient.visits.length}`);
                 currentClient.visits.forEach((v, idx) => {
                     console.log(`  Визит ${idx}: id=${v.id}, service="${v.service}", date=${v.date}, status=${v.status}`);
                 });
                 
-                const nextVisitsCount = currentClient.visits.filter(v => 
-                    v.service === editingVisitService && 
-                    new Date(v.date) > currentVisitDate &&
-                    v.status !== 'Отменен'
-                ).length;
+                const nextVisitsCount = currentClient.visits.filter(v => {
+                    const vCourseBaseName = v.service.split(':')[0].trim();
+                    return vCourseBaseName === courseBaseName && 
+                           new Date(v.date) > currentVisitDate &&
+                           v.status !== 'Отменен';
+                }).length;
                 
-                console.log(`Фильтр: service="${editingVisitService}", дата > ${currentVisitDate.toISOString()}, статус != Отменен`);
+                console.log(`Фильтр: курс="${courseBaseName}", дата > ${currentVisitDate.toISOString()}, статус != Отменен`);
                 console.log(`Проверка выходных: начальная дата ${newDate}, сеансов для переноса: ${nextVisitsCount}`);
                 
                 // Проверяем, попадут ли переносимые сеансы на выходные
