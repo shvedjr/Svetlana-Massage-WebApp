@@ -102,10 +102,10 @@
             <label>Услуга <span style="color: red;">*</span></label>
             <select id="service" onchange="handleServiceChange()" required>
                 <option value="">-- Выберите услугу --</option>
-                <option value="Курс">Курс</option>
-                <option value="Курс Взрослый">Курс Взрослый</option>
-                <option value="Разовый сеанс">Разовый сеанс</option>
-                <option value="Разовый сеанс Взрослый">Разовый сеанс Взрослый</option>
+                <option value="Курс детский">Курс детский</option>
+                <option value="Курс взрослый">Курс взрослый</option>
+                <option value="Разовый детский">Разовый детский</option>
+                <option value="Разовый взрослый">Разовый взрослый</option>
                 <option value="Консультация онлайн">Консультация онлайн</option>
                 <option value="Консультация оффлайн">Консультация оффлайн</option>
             </select>
@@ -243,7 +243,7 @@
             }
             
             // Показываем/скрываем блок ребёнка
-            const isAdult = selectedService.includes('Взрослый') || selectedService === 'Консультация оффлайн';
+            const isAdult = selectedService.includes('взрослый') || selectedService === 'Консультация оффлайн';
             childBlock.style.display = isAdult ? 'none' : 'block';
             pLabel.innerText = isAdult ? 'ФИО Клиента' : 'Имя родителя';
         }
@@ -344,7 +344,7 @@
             }
             
             // Обязательные поля для детского массажа
-            const isAdultService = serviceName.includes('Взрослый') || serviceName === 'Консультация оффлайн';
+            const isAdultService = serviceName.includes('взрослый') || serviceName === 'Консультация оффлайн';
             if (!isAdultService) {
                 if (!d.child_name) {
                     tg.showAlert("❌ Укажите имя ребенка");

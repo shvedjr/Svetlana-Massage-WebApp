@@ -496,10 +496,20 @@
     <div id="visit-add-box">
         <h4 style="margin-top:0; text-align:center; color: var(--dark);">🗓 Записать на сеанс</h4>
         <div id="service-tags" style="margin-bottom:15px; text-align:center; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;">
-            <span class="tag" onclick="selectService('КУРС (10 сеансов)', this)">КУРС (10 сеансов)</span>
-            <span class="tag" onclick="selectService('Детский массаж', this)">Детский массаж</span>
-            <span class="tag" onclick="selectService('Взрослый массаж', this)">Взрослый массаж</span>
-            <span class="tag" onclick="selectService('КОНСУЛЬТАЦИЯ', this)">КОНСУЛЬТАЦИЯ</span>
+            <span class="tag" onclick="selectService('Курс детский', this)">Курс детский</span>
+            <span class="tag" onclick="selectService('Курс взрослый', this)">Курс взрослый</span>
+            <span class="tag" onclick="selectService('Разовый детский', this)">Разовый детский</span>
+            <span class="tag" onclick="selectService('Разовый взрослый', this)">Разовый взрослый</span>
+            <span class="tag" onclick="selectService('Консультация онлайн', this)">Консультация онлайн</span>
+            <span class="tag" onclick="selectService('Консультация оффлайн', this)">Консультация оффлайн</span>
+        </div>
+        <div id="location-select-box" style="margin-bottom:15px;">
+            <div class="box-label" style="margin-bottom:5px;">Место проведения <span style="color: red;">*</span></div>
+            <select id="av-location" class="inp" style="padding: 12px;">
+                <option value="">-- Выберите место --</option>
+                <option value="Дом">Дом</option>
+                <option value="Выезд">Выезд</option>
+            </select>
         </div>
         <div class="box-label" style="margin-bottom:5px;">Дата визита</div>
         <input type="date" id="av-date" class="inp">
@@ -1030,8 +1040,11 @@
                     <div style="font-size:1.1rem; font-weight:800;">🛠 ${v.service}</div> 
                     <div style="margin-top:5px; font-size:0.95rem; color:var(--hint);">${v.comment||'—'}</div>
                     ${resLine}
-                    <div style="margin-top:10px; font-size:0.75rem; font-weight:bold; color:${isDone?'var(--done-green)':(isCancelled?'var(--cancel-red)':'var(--hint)')}">
-                        ${isDone ? '● ВЫПОЛНЕНО' : (isCancelled ? '● ОТМЕНЕНО' : '○ ОЖИДАЕТ')}
+                    <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:0.75rem; font-weight:bold; color:${isDone?'var(--done-green)':(isCancelled?'var(--cancel-red)':'var(--hint)')}">
+                            ${isDone ? '● ВЫПОЛНЕНО' : (isCancelled ? '● ОТМЕНЕНО' : '○ ОЖИДАЕТ')}
+                        </div>
+                        ${v.location ? `<div style="font-size:0.75rem; font-weight:bold; color:var(--hint);">📍 ${v.location}</div>` : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -1121,15 +1134,32 @@
             selectedService = s;
             document.querySelectorAll('#service-tags .tag').forEach(t => t.classList.remove('selected'));
             el.classList.add('selected');
+            
+            // Показываем/скрываем поле места проведения
+            const locationBox = document.getElementById('location-select-box');
+            const locationSelect = document.getElementById('av-location');
+            if (s === 'Консультация оффлайн') {
+                locationBox.style.display = 'none';
+                locationSelect.value = '';
+            } else {
+                locationBox.style.display = 'block';
+            }
         }
 
         function saveNewVisit() {
             if (!selectedService) return alert("Выберите тип услуги!");
             const date = document.getElementById('av-date').value;
             const time = document.getElementById('av-time').value;
+            const location = document.getElementById('av-location').value;
             const priceInput = document.getElementById('va-price');
             const price = parseFloat(priceInput.value) || 0;
             if (!date || !time) return alert("Выберите дату и время!");
+            
+            // Проверка места проведения (кроме Консультация оффлайн)
+            if (selectedService !== 'Консультация оффлайн' && !location) {
+                return alert("⚠️ Выберите место проведения (Дом или Выезд)!");
+            }
+            
             if (price <= 0) {
                 priceInput.focus();
                 return alert("⚠️ Укажите стоимость сеанса!\n\nЦена должна быть больше 0 ₽");
@@ -1222,7 +1252,8 @@
                 start_date: date,
                 start_time: time,
                 price: parseFloat(price),
-                skip_weekends: skipWeekends
+                skip_weekends: skipWeekends,
+                location: location || null
             });
         }
 
