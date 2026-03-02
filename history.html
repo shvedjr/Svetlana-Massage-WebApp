@@ -1181,12 +1181,10 @@
                 // Считаем количество последующих сеансов того же курса
                 const currentVisitDate = new Date(currentVisit.date);
                 
-                console.log(`Все визиты клиента:`, currentClient.visits.map(v => ({
-                    id: v.id,
-                    service: v.service,
-                    date: v.date,
-                    status: v.status
-                })));
+                console.log(`Всего визитов клиента: ${currentClient.visits.length}`);
+                currentClient.visits.forEach((v, idx) => {
+                    console.log(`  Визит ${idx}: id=${v.id}, service="${v.service}", date=${v.date}, status=${v.status}`);
+                });
                 
                 const nextVisitsCount = currentClient.visits.filter(v => 
                     v.service === editingVisitService && 
