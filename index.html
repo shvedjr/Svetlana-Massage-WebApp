@@ -249,24 +249,8 @@
         }
 
         function getDuration(service, ageStr) {
-            const s = service.toLowerCase();
-            const age = ageStr.toLowerCase();
-            
-            // Консультации и взрослые - 60 минут
-            if (s.includes('консультация') || s.includes('взрослый')) return 60;
-            
-            // Для детских услуг определяем по возрасту
-            if (s.includes('курс') || s.includes('разовый')) {
-                const hasYear = age.includes('год') || age.includes('лет');
-                const hasInfantUnits = age.includes('мес') || age.includes('нед') || age.includes('дн');
-                const numMatch = age.match(/\d+/);
-                const num = numMatch ? parseInt(numMatch[0]) : 0;
-                if (hasYear && num >= 1) return 40;
-                if (hasInfantUnits) return 30;
-                if (num >= 1 && !hasInfantUnits) return 40;
-                return 30;
-            }
-            return 30;
+            // Все сеансы - 60 минут
+            return 60;
         }
 
         function send() {
