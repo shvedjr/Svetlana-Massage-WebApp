@@ -1188,7 +1188,9 @@
             
             // ПРОВЕРКА ДЛЯ КУРСА
             let skipWeekends = false;
-            if (selectedService.includes('КУРС') || selectedService.includes('курс')) {
+            const isCourse = selectedService.toLowerCase().includes('курс');
+            
+            if (isCourse) {
                 const selectedDate = new Date(date + 'T' + time);
                 const dayOfWeek = selectedDate.getDay(); // 0 = воскресенье, 1 = понедельник
                 const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
