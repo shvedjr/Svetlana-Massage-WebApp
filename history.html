@@ -505,11 +505,15 @@
         </div>
         <div id="location-select-box" style="margin-bottom:15px;">
             <div class="box-label" style="margin-bottom:5px;">Место проведения <span style="color: red;">*</span></div>
-            <select id="av-location" class="inp" style="padding: 12px;">
+            <select id="av-location" class="inp" style="padding: 12px;" onchange="handleAddVisitLocationChange()">
                 <option value="">-- Выберите место --</option>
                 <option value="Дом">Дом</option>
                 <option value="Выезд">Выезд</option>
             </select>
+        </div>
+        <div id="av-address-box" style="display:none; margin-bottom:15px;">
+            <div class="box-label" style="margin-bottom:5px;">Адрес</div>
+            <input type="text" id="av-address" class="inp" placeholder="Город, улица, дом">
         </div>
         <div class="box-label" style="margin-bottom:5px;">Дата визита</div>
         <input type="date" id="av-date" class="inp">
@@ -1266,6 +1270,15 @@
                 }
             }
             
+            // Получаем адрес из поля (если место выбрано)
+            let addressOverride = null;
+            if (location) {
+                const addressInput = document.getElementById('av-address');
+                if (addressInput && addressInput.value) {
+                    addressOverride = addressInput.value;
+                }
+            }
+            
             const btn = document.querySelector('#visit-add-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
             sendToBot({
@@ -1276,8 +1289,39 @@
                 start_time: time,
                 price: parseFloat(price),
                 skip_weekends: skipWeekends,
-                location: location || null
+                location: location || null,
+                address_override: addressOverride
             });
+        }
+
+        function handleAddVisitLocationChange() {
+            const locationValue = document.getElementById('av-location').value;
+            const addressBox = document.getElementById('av-address-box');
+            const addressInput = document.getElementById('av-address');
+            
+            if (locationValue === 'Дом') {
+                // Дом = адрес специалиста
+                addressBox.style.display = 'block';
+                addressInput.value = 'п.Большие Кабаны, Ягодная 19А';
+                addressInput.readOnly = true;
+                addressInput.style.backgroundColor = '#f0f0f0';
+            } else if (locationValue === 'Выезд') {
+                // Выезд = адрес клиента (можно редактировать)
+                addressBox.style.display = 'block';
+                // Подставляем адрес из карточки клиента
+                const clientData = allClients.find(c => c.id === curC);
+                if (clientData && clientData.address) {
+                    addressInput.value = clientData.address;
+                } else {
+                    addressInput.value = '';
+                }
+                addressInput.readOnly = false;
+                addressInput.style.backgroundColor = '';
+            } else {
+                // Не выбрано место
+                addressBox.style.display = 'none';
+                addressInput.value = '';
+            }
         }
 
         // ФУНКЦИЯ deleteVisit УДАЛЕНА - теперь удаление только через ОТМЕНУ

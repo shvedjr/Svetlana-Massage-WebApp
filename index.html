@@ -113,7 +113,7 @@
         
         <div class="input-group" id="location_block">
             <label>Место проведения <span style="color: red;">*</span></label>
-            <select id="location" required>
+            <select id="location" required onchange="handleLocationChange()">
                 <option value="">-- Выберите место --</option>
                 <option value="Дом">Дом</option>
                 <option value="Выезд">Выезд</option>
@@ -246,6 +246,16 @@
             const isAdult = selectedService.includes('взрослый') || selectedService === 'Консультация оффлайн';
             childBlock.style.display = isAdult ? 'none' : 'block';
             pLabel.innerText = isAdult ? 'ФИО Клиента' : 'Имя родителя';
+        }
+
+        function handleLocationChange() {
+            const locationValue = document.getElementById('location').value;
+            const addrInput = document.getElementById('addr');
+            
+            // Если выбрано "Дом" - подставляем адрес
+            if (locationValue === 'Дом') {
+                addrInput.value = 'п.Большие Кабаны, Ягодная 19А';
+            }
         }
 
         function getDuration(service, ageStr) {
