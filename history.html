@@ -765,7 +765,8 @@
                 } catch {}
             });
             
-            return nextVisit || lastVisit;
+            // Возвращаем объект с обоими датами
+            return { nextVisit, lastVisit };
         }
         
         function formatVisitDateTime(date) {
@@ -914,10 +915,18 @@
                             dateTimeDisplay = formatVisitDateTime(targetVisit.date);
                         }
                     } else {
-                        // Для остальных фильтров - показываем дату ближайшего или последнего визита
-                        const nextDate = getNextVisitDate(c);
-                        if (nextDate) {
-                            dateTimeDisplay = formatVisitDateTime(nextDate);
+                        // Для остальных фильтров - показываем дату в зависимости от статуса
+                        const visitDates = getNextVisitDate(c);
+                        
+                        if (clientStatus.status === 'completed' && visitDates.lastVisit) {
+                            // Для статуса "ЗАВЕРШЕН" - показываем последний выполненный сеанс
+                            dateTimeDisplay = formatVisitDateTime(visitDates.lastVisit);
+                        } else if (visitDates.nextVisit) {
+                            // Для статусов "ОЖИДАЕТ" и "СЕГОДНЯ" - показываем ближайший визит
+                            dateTimeDisplay = formatVisitDateTime(visitDates.nextVisit);
+                        } else if (visitDates.lastVisit) {
+                            // Если нет будущих визитов - показываем последний
+                            dateTimeDisplay = formatVisitDateTime(visitDates.lastVisit);
                         }
                     }
                     
