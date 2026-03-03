@@ -1042,7 +1042,7 @@
                                 📅 ${vDateDisplay} ⏰ ${vTime}
                             </span>
                         </div>
-                        <div style="font-size:1.45rem; font-weight:700; color:var(--dark); opacity:0.6;">
+                        <div style="font-size:0.94rem; font-weight:700; color:var(--dark); opacity:0.6;">
                             <span class="edit-price" onclick="event.stopPropagation(); editVisitPrice(${v.id}, ${displayPrice})" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
                                 💰 ${displayPrice} ₽
                             </span>
@@ -1052,10 +1052,10 @@
                     <div style="margin-top:5px; font-size:0.95rem; color:var(--hint);">${v.comment||'—'}</div>
                     ${resLine}
                     <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-size:1.28rem; font-weight:bold; color:${isDone?'var(--done-green)':(isCancelled?'var(--cancel-red)':'var(--hint)')}">
+                        <div style="font-size:0.83rem; font-weight:bold; color:${isDone?'var(--done-green)':(isCancelled?'var(--cancel-red)':'var(--hint)')}">
                             ${isDone ? '● ВЫПОЛНЕНО' : (isCancelled ? '● ОТМЕНЕНО' : '○ ОЖИДАЕТ')}
                         </div>
-                        ${v.location ? `<div style="font-size:1.28rem; font-weight:bold; color:${locationColor};">📍 ${v.location}</div>` : ''}
+                        ${v.location ? `<div style="font-size:0.83rem; font-weight:bold; color:${locationColor};">📍 ${v.location}</div>` : ''}
                     </div>
                 </div>`;
             }).join('');
