@@ -1036,7 +1036,7 @@
                 
                 return `<div class="${cardClass}" onclick="openE(${v.id}, '${v.service.replace(/'/g, "\\'")}', '${(v.comment||"").replace(/'/g, "\\'")}', '${(v.result||"").replace(/'/g, "\\'")}', '${vDate}', '${v.status || 'planned'}')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-size:1.02rem; color:var(--hint); margin-bottom:5px;">
+                        <div style="font-size:1.02rem; font-weight:bold; color:var(--hint); margin-bottom:5px;">
                             #${vNum} 
                             <span class="edit-datetime" onclick="event.stopPropagation(); editVisitDateTime(${v.id}, '${vDate}', '${vTime}', '${v.service.replace(/'/g, "\\'")}');" style="cursor:pointer; color:var(--pink); text-decoration:underline;">
                                 📅 ${vDateDisplay} ⏰ ${vTime}
