@@ -1626,7 +1626,7 @@
         }
 
         function askDelete() {
-            tg.showConfirm("Внимание! Вы действительно хотите безвозвратно удалить эту карточку?", (confirm) => {
+            tg.showConfirm("Внимание! Вы действительно хотите безвозвратно удалить всю информацию о клиенте, оплатах и его сеансах?", (confirm) => {
                 if (confirm) sendToBot({ action: 'delete_client', client_id: curC });
             });
         }
