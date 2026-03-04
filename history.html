@@ -1698,6 +1698,9 @@
                         visit.status = 'Выполнен';
                     } else if (curEditStatus === 'ОТМЕНЕНО') {
                         visit.status = 'Отменен';
+                    } else {
+                        // Если статус не выбран - возвращаем в "Ожидает"
+                        visit.status = 'planned';
                     }
                     console.log(`saveE: updated visit status from ${oldStatus} to ${visit.status}`);
                 } else {
