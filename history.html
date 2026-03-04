@@ -75,7 +75,7 @@
             .phone-info { color: #000000; }
             .edit-profile-btn { background: #252525; border-color: var(--border); color: var(--hint); }
             .overlay { background: rgba(0, 0, 0, 0.8); }
-            #edit-box, #total-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box { 
+            #edit-box, #total-edit-box, #complaints-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box { 
                 background: #1e1e1e; 
                 border-top: 1px solid var(--border);
             }
@@ -432,7 +432,7 @@
         .st-btn.inactive { background: var(--secondary-bg); color: var(--hint); border-color: var(--border); box-shadow: none; opacity: 0.5; }
 
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(91, 77, 66, 0.5); z-index: 25; backdrop-filter: blur(4px); }
-        #edit-box, #total-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box, #datetime-edit-box, #price-edit-box { 
+        #edit-box, #total-edit-box, #complaints-edit-box, #client-edit-box, #pay-box, #plan-box, #address-box, #visit-add-box, #datetime-edit-box, #price-edit-box { 
             display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg); 
             padding: 25px; border-radius: 35px 35px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); 
             z-index: 30; box-sizing: border-box; 
@@ -515,6 +515,8 @@
             <div class="box-label" style="margin-bottom:5px;">Адрес</div>
             <input type="text" id="av-address" class="inp" placeholder="Город, улица, дом">
         </div>
+        <div class="box-label" style="margin-bottom:5px;">Жалобы</div>
+        <textarea id="av-complaints" class="inp" rows="2" placeholder="С чем обратился клиент?"></textarea>
         <div class="box-label" style="margin-bottom:5px;">Дата визита</div>
         <input type="date" id="av-date" class="inp">
         <div class="box-label" style="margin-bottom:5px;">Время</div>
@@ -546,6 +548,12 @@
         <h4 style="margin-top:0; color: var(--dark);">🏁 Итоговый результат</h4>
         <textarea id="e-total" class="inp" rows="5" placeholder="Как всё прошло в целом?"></textarea>
         <button class="save-btn" onclick="saveT()">СОХРАНИТЬ ИТОГ</button>
+    </div>
+
+    <div id="complaints-edit-box">
+        <h4 style="margin-top:0; color: #e65100;">⚠️ Жалобы</h4>
+        <textarea id="e-complaints" class="inp" rows="5" placeholder="С чем обратился клиент? Какие жалобы?"></textarea>
+        <button class="save-btn" style="background: #ff9800;" onclick="saveComplaints()">СОХРАНИТЬ ЖАЛОБЫ</button>
     </div>
 
     <div id="client-edit-box">
@@ -1134,6 +1142,10 @@
                     <span class="box-label">🏁 Итог курса</span>
                     <div style="margin-top:10px; font-size:1.1rem; font-weight:600;">${c.total_result || 'Нажмите, чтобы добавить итог...'}</div>
                 </div>
+                <div class="total-card" onclick="openComplaints(\`${(c.comment||"").replace(/`/g, "'")}\`)" style="background: linear-gradient(135deg, #fff5e6 0%, #ffe4cc 100%); border-left: 4px solid #ff9800;">
+                    <span class="box-label">⚠️ Жалобы</span>
+                    <div style="margin-top:10px; font-size:1.1rem; font-weight:600; color: #e65100;">${c.comment || 'Нажмите, чтобы добавить жалобы...'}</div>
+                </div>
                 <h3 style="padding-left:10px; color: var(--dark);">🕒 История визитов</h3>
                 ${vHtml}`;
             document.getElementById('edit-prof-trigger').onclick = () => openClientEdit(c);
@@ -1159,6 +1171,14 @@
             document.getElementById('av-date').value = now.toISOString().split('T')[0];
             document.getElementById('av-time').value = `${hours}:${mins}`; // ПОДСТАВЛЯЕМ ТЕКУЩЕЕ ВРЕМЯ
             document.getElementById('va-price').value = '';
+            
+            // Подставляем текущие жалобы клиента
+            const clientData = allClients.find(c => c.id === curC);
+            const complaintsInput = document.getElementById('av-complaints');
+            if (complaintsInput && clientData) {
+                complaintsInput.value = clientData.comment || '';
+            }
+            
             selectedService = "";
             document.querySelectorAll('#service-tags .tag').forEach(t => t.classList.remove('selected'));
             openEditBox('visit-add-box');
@@ -1306,6 +1326,10 @@
                 }
             }
             
+            // Получаем жалобы из поля
+            const complaintsInput = document.getElementById('av-complaints');
+            const complaints = complaintsInput ? complaintsInput.value : '';
+            
             const btn = document.querySelector('#visit-add-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
             sendToBot({
@@ -1317,7 +1341,8 @@
                 price: parseFloat(price),
                 skip_weekends: skipWeekends,
                 location: location || null,
-                address_override: addressOverride
+                address_override: addressOverride,
+                complaints: complaints
             });
         }
 
@@ -1360,7 +1385,7 @@
 
         function closeAllEditBoxes() {
             document.getElementById('overlay').style.display = 'none';
-            const boxes = ['edit-box', 'total-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box', 'price-edit-box'];
+            const boxes = ['edit-box', 'total-edit-box', 'complaints-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box', 'price-edit-box'];
             boxes.forEach(id => document.getElementById(id).style.display = 'none');
         }
 
@@ -1653,6 +1678,17 @@
             const btn = document.querySelector('#total-edit-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
             sendToBot({ action: 'edit_total', client_id: curC, total_result: document.getElementById('e-total').value });
+        }
+
+        function openComplaints(v) { 
+            document.getElementById('e-complaints').value = v; 
+            openEditBox('complaints-edit-box'); 
+        }
+        
+        function saveComplaints() { 
+            const btn = document.querySelector('#complaints-edit-box .save-btn');
+            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+            sendToBot({ action: 'edit_complaints', client_id: curC, complaints: document.getElementById('e-complaints').value });
         }
 
         function saveClient() {
