@@ -358,6 +358,21 @@
             background: white; color: var(--dark); font-weight: 700; font-size: 0.85rem;
             box-shadow: 0 4px 12px rgba(242, 186, 201, 0.3); cursor: pointer;
         }
+        .save-all-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 10px 16px; border-radius: 15px; border: 2px solid #4caf50;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white; font-weight: 700; font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4); cursor: pointer;
+            animation: pulse-save 2s infinite;
+            flex: 1;
+            justify-content: center;
+            max-width: 200px;
+        }
+        @keyframes pulse-save {
+            0%, 100% { box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 4px 20px rgba(76, 175, 80, 0.7); transform: scale(1.02); }
+        }
         .del-btn {
             display: flex; align-items: center; justify-content: center;
             width: 42px; height: 42px; border-radius: 15px; border: 2px solid var(--pink);
@@ -484,8 +499,11 @@
     <div id="modal">
         <div class="m-container">
             <div class="nav-row">
-                <button class="back-btn" onclick="closeM()">
+                <button class="back-btn" onclick="handleBackClick()">
                     <span style="font-size: 1.1rem;">‹</span> НАЗАД
+                </button>
+                <button id="save-all-btn" class="save-all-btn" onclick="saveAllChanges()" style="display: none;">
+                    💾 СОХРАНИТЬ
                 </button>
                 <div id="trophy-badge" style="display: none; padding: 6px 12px; border-radius: 12px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #8b6914; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);"></div>
                 <button class="del-btn" onclick="askDelete()">
@@ -640,6 +658,19 @@
         let editingVisitService = ""; // Для определения курса при редактировании
         let archiveLoaded = false; // Флаг загрузки архива
         let hasArchive = false; // Есть ли архивные клиенты
+        
+        // ========== СИСТЕМА ОТЛОЖЕННОГО СОХРАНЕНИЯ ==========
+        let pendingChanges = {
+            clientProfile: null,      // Изменения профиля клиента
+            visits: {},               // Изменения визитов {visitId: {changes}}
+            payments: [],             // Новые платежи
+            plan: null,               // Изменение плана
+            total: null,              // Изменение итога курса
+            complaints: null,         // Изменение жалоб
+            newVisit: null           // Новый визит
+        };
+        let hasUnsavedChanges = false;
+        let originalClientData = null; // Сохраняем оригинальные данные для отката
 
         function loadData() {
             const params = new URLSearchParams(window.location.search);
@@ -1559,15 +1590,27 @@
                 return;
             }
             
-            const btn = document.querySelector('#price-edit-box .save-btn');
-            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
+            // Сохраняем изменения локально
+            if (!pendingChanges.visits[editingVisitId]) {
+                pendingChanges.visits[editingVisitId] = {};
+            }
+            pendingChanges.visits[editingVisitId].new_price = newPrice;
             
-            sendToBot({
-                action: 'edit_visit_price',
-                visit_id: editingVisitId,
-                client_id: curC,
-                new_price: newPrice
-            });
+            // Обновляем визит локально
+            const client = allClients.find(c => c.id === curC);
+            if (client) {
+                const visit = client.visits.find(v => v.id === editingVisitId);
+                if (visit) {
+                    visit.price = newPrice;
+                }
+            }
+            
+            markAsChanged();
+            closeEditBox();
+            
+            // Обновляем отображение карточки
+            show(client);
+            document.getElementById('modal').style.display = 'flex';
         }
 
         function openE(id, service, comm, res, date, status) { 
@@ -1615,24 +1658,46 @@
                 }
             }
             
-            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
             let finalRes = document.getElementById('e-res').value.trim();
             if(curEditStatus) finalRes = curEditStatus + (finalRes ? ", " + finalRes : "");
             const client = allClients.find(c => c.id === curC);
             let displayTitle = document.getElementById('e-title').innerText;
             let sessionInfo = displayTitle.replace('🛠 ', '').split(' (')[0];
             
-            sendToBot({ 
-                action: 'edit_visit', 
-                visit_id: curV, 
-                client_id: curC, 
-                name: client ? client.name : "Клиент", 
-                session_display: sessionInfo, 
-                comment: document.getElementById('e-comm').value, 
-                result: finalRes, 
+            // Сохраняем изменения локально
+            if (!pendingChanges.visits[curV]) {
+                pendingChanges.visits[curV] = {};
+            }
+            
+            pendingChanges.visits[curV] = {
+                name: client ? client.name : "Клиент",
+                session_display: sessionInfo,
+                comment: document.getElementById('e-comm').value,
+                result: finalRes,
                 status_only: curEditStatus,
-                old_status: curVisitStatus // ОТПРАВЛЯЕМ СТАРЫЙ СТАТУС ДЛЯ ПРОВЕРКИ
-            });
+                old_status: curVisitStatus
+            };
+            
+            // Обновляем визит локально
+            if (client) {
+                const visit = client.visits.find(v => v.id === curV);
+                if (visit) {
+                    visit.comment = pendingChanges.visits[curV].comment;
+                    visit.result = finalRes;
+                    if (curEditStatus === 'ВЫПОЛНЕНО') {
+                        visit.status = 'Выполнен';
+                    } else if (curEditStatus === 'ОТМЕНЕНО') {
+                        visit.status = 'Отменен';
+                    }
+                }
+            }
+            
+            markAsChanged();
+            closeEditBox();
+            
+            // Обновляем отображение карточки
+            show(client);
+            document.getElementById('modal').style.display = 'flex';
         }
 
         function openPay() {
@@ -1671,23 +1736,66 @@
         function savePay() {
             const amount = document.getElementById('pay-amount').value;
             if(!amount) return alert("Введите сумму");
-            const btn = document.querySelector('#pay-box .save-btn');
-            btn.innerText = "ЗАЧИСЛЯЕМ..."; btn.style.opacity = "0.5";
-            sendToBot({ action: 'add_payment', client_id: curC, amount: parseFloat(amount) });
+            
+            // Сохраняем платеж локально
+            pendingChanges.payments.push({
+                amount: parseFloat(amount)
+            });
+            
+            // Обновляем баланс клиента локально
+            const client = allClients.find(c => c.id === curC);
+            if (client) {
+                client.total_paid = (client.total_paid || 0) + parseFloat(amount);
+                client.balance = (client.contract_sum || 0) - client.total_paid;
+            }
+            
+            markAsChanged();
+            closeEditBox();
+            
+            // Обновляем отображение карточки
+            show(client);
+            document.getElementById('modal').style.display = 'flex';
         }
 
         function savePlan() {
             const amount = document.getElementById('plan-amount').value;
             if(!amount || amount < 0) return alert("Введите корректную сумму");
-            const btn = document.querySelector('#plan-box .save-btn');
-            btn.innerText = "ОБНОВЛЯЕМ..."; btn.style.opacity = "0.5";
-            sendToBot({ action: 'edit_plan', client_id: curC, amount: parseFloat(amount) });
+            
+            // Сохраняем изменения локально
+            pendingChanges.plan = parseFloat(amount);
+            
+            // Обновляем данные клиента локально
+            const client = allClients.find(c => c.id === curC);
+            if (client) {
+                client.contract_sum = pendingChanges.plan;
+            }
+            
+            markAsChanged();
+            closeEditBox();
+            
+            // Обновляем отображение карточки
+            show(client);
+            document.getElementById('modal').style.display = 'flex';
         }
 
         function saveT() { 
-            const btn = document.querySelector('#total-edit-box .save-btn');
-            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
-            sendToBot({ action: 'edit_total', client_id: curC, total_result: document.getElementById('e-total').value });
+            const totalValue = document.getElementById('e-total').value;
+            
+            // Сохраняем изменения локально
+            pendingChanges.total = totalValue;
+            
+            // Обновляем данные клиента локально
+            const client = allClients.find(c => c.id === curC);
+            if (client) {
+                client.total_result = totalValue;
+            }
+            
+            markAsChanged();
+            closeEditBox();
+            
+            // Обновляем отображение карточки
+            show(client);
+            document.getElementById('modal').style.display = 'flex';
         }
 
         function openComplaints(v) { 
@@ -1696,9 +1804,23 @@
         }
         
         function saveComplaints() { 
-            const btn = document.querySelector('#complaints-edit-box .save-btn');
-            btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
-            sendToBot({ action: 'edit_complaints', client_id: curC, complaints: document.getElementById('e-complaints').value });
+            const complaintsValue = document.getElementById('e-complaints').value;
+            
+            // Сохраняем изменения локально
+            pendingChanges.complaints = complaintsValue;
+            
+            // Обновляем данные клиента локально
+            const client = allClients.find(c => c.id === curC);
+            if (client) {
+                client.comment = complaintsValue;
+            }
+            
+            markAsChanged();
+            closeEditBox();
+            
+            // Обновляем отображение карточки
+            show(client);
+            document.getElementById('modal').style.display = 'flex';
         }
 
         function saveClient() {
@@ -1744,14 +1866,38 @@
                 }
             }
             
-            const btn = document.querySelector('#client-edit-box .save-btn');
-            btn.innerText = "ОБНОВЛЯЕМ..."; btn.style.opacity = "0.5";
-            sendToBot({ 
-                action: 'edit_client', client_id: curC, name: name, phone: phone, 
-                child_name: childName, child_age: childAge, address: address,
-                entrance: document.getElementById('ec-entrance').value, floor: document.getElementById('ec-floor').value, intercom: document.getElementById('ec-intercom').value,
+            // Сохраняем изменения локально
+            pendingChanges.clientProfile = {
+                name: name,
+                phone: phone,
+                child_name: childName,
+                child_age: childAge,
+                address: address,
+                entrance: document.getElementById('ec-entrance').value,
+                floor: document.getElementById('ec-floor').value,
+                intercom: document.getElementById('ec-intercom').value,
                 address_comment: document.getElementById('ec-addr-comm').value
-            });
+            };
+            
+            // Обновляем данные клиента локально
+            if (currentClient) {
+                currentClient.name = name;
+                currentClient.phone = phone;
+                currentClient.child_name = childName;
+                currentClient.child_age = childAge;
+                currentClient.address = address;
+                currentClient.entrance = pendingChanges.clientProfile.entrance;
+                currentClient.floor = pendingChanges.clientProfile.floor;
+                currentClient.intercom = pendingChanges.clientProfile.intercom;
+                currentClient.address_comment = pendingChanges.clientProfile.address_comment;
+            }
+            
+            markAsChanged();
+            closeEditBox();
+            
+            // Обновляем отображение карточки
+            show(currentClient);
+            document.getElementById('modal').style.display = 'flex';
         }
 
         function askDelete() {
@@ -1760,9 +1906,145 @@
             });
         }
 
+        // ========== ФУНКЦИИ УПРАВЛЕНИЯ ОТЛОЖЕННЫМ СОХРАНЕНИЕМ ==========
+        
+        function markAsChanged() {
+            hasUnsavedChanges = true;
+            toggleSaveButton();
+        }
+        
+        function toggleSaveButton() {
+            const saveBtn = document.getElementById('save-all-btn');
+            if (hasUnsavedChanges) {
+                saveBtn.style.display = 'flex';
+            } else {
+                saveBtn.style.display = 'none';
+            }
+        }
+        
+        function resetPendingChanges() {
+            pendingChanges = {
+                clientProfile: null,
+                visits: {},
+                payments: [],
+                plan: null,
+                total: null,
+                complaints: null,
+                newVisit: null
+            };
+            hasUnsavedChanges = false;
+            originalClientData = null;
+            toggleSaveButton();
+        }
+        
+        function handleBackClick() {
+            if (hasUnsavedChanges) {
+                tg.showConfirm("У вас есть несохраненные изменения. Сохранить перед закрытием?", (confirmed) => {
+                    if (confirmed) {
+                        saveAllChanges();
+                    } else {
+                        resetPendingChanges();
+                        closeM();
+                    }
+                });
+            } else {
+                closeM();
+            }
+        }
+        
         function closeM() { 
             document.getElementById('modal').style.display = 'none'; 
             window.location.hash = '';
+        }
+        
+        async function saveAllChanges() {
+            const saveBtn = document.getElementById('save-all-btn');
+            saveBtn.innerText = '⏳ СОХРАНЯЕМ...';
+            saveBtn.style.opacity = '0.6';
+            saveBtn.disabled = true;
+            
+            // Собираем все изменения в один массив
+            const allChanges = [];
+            
+            // Профиль клиента
+            if (pendingChanges.clientProfile) {
+                allChanges.push({
+                    action: 'edit_client',
+                    client_id: curC,
+                    ...pendingChanges.clientProfile
+                });
+            }
+            
+            // Изменения визитов
+            Object.keys(pendingChanges.visits).forEach(visitId => {
+                const changes = pendingChanges.visits[visitId];
+                allChanges.push({
+                    action: 'edit_visit',
+                    visit_id: parseInt(visitId),
+                    client_id: curC,
+                    ...changes
+                });
+            });
+            
+            // Платежи
+            pendingChanges.payments.forEach(payment => {
+                allChanges.push({
+                    action: 'add_payment',
+                    client_id: curC,
+                    ...payment
+                });
+            });
+            
+            // План
+            if (pendingChanges.plan !== null) {
+                allChanges.push({
+                    action: 'edit_plan',
+                    client_id: curC,
+                    amount: pendingChanges.plan
+                });
+            }
+            
+            // Итог курса
+            if (pendingChanges.total !== null) {
+                allChanges.push({
+                    action: 'edit_total',
+                    client_id: curC,
+                    total_result: pendingChanges.total
+                });
+            }
+            
+            // Жалобы
+            if (pendingChanges.complaints !== null) {
+                allChanges.push({
+                    action: 'edit_complaints',
+                    client_id: curC,
+                    complaints: pendingChanges.complaints
+                });
+            }
+            
+            // Новый визит
+            if (pendingChanges.newVisit) {
+                allChanges.push({
+                    action: 'add_new_visit',
+                    client_id: curC,
+                    ...pendingChanges.newVisit
+                });
+            }
+            
+            // Отправляем все изменения одним пакетом
+            if (allChanges.length > 0) {
+                sendToBot({
+                    action: 'batch_update',
+                    client_id: curC,
+                    changes: allChanges
+                });
+            } else {
+                // Нет изменений - просто закрываем
+                resetPendingChanges();
+                saveBtn.innerText = '💾 СОХРАНИТЬ';
+                saveBtn.style.opacity = '1';
+                saveBtn.disabled = false;
+            }
         }
 
         loadData();
