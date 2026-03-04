@@ -939,7 +939,7 @@
                         ? `<div class="course-trophy">🏆 Прошёл курс ${completedCourses.join(', ')}</div>` 
                         : '';
                     
-                    d.innerHTML = `<div class="item-number">${itemNumber}</div>${statusBadge}${dateTimeBadge}${trophyBadge}<span class="client-name">${c.name}</span>
+                    d.innerHTML = `<div class="item-number">${itemNumber}</div>${statusBadge}${trophyBadge}${dateTimeBadge}<span class="client-name">${c.name}</span>
                         <div class="child-info">👶 ${c.child_name || '—'} · ${c.child_age || '?'}</div>
                         <span class="phone-info">📞 ${c.phone || '—'}</span>`;
                     l.appendChild(d);
