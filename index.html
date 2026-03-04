@@ -228,6 +228,37 @@
                 }
             }
         });
+
+        // Специальная обработка вставки для iOS
+        document.getElementById('phone').addEventListener('paste', function (e) {
+            e.preventDefault();
+            
+            // Получаем вставляемый текст
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Извлекаем только цифры
+            let digits = pastedText.replace(/\D/g, '');
+            
+            if (digits.length === 0) return;
+            
+            // Если первая цифра 8 - заменяем на 7
+            if (digits.startsWith('8')) {
+                digits = '7' + digits.substring(1);
+            }
+            // Если первая цифра НЕ 7 - добавляем 7 в начало
+            else if (!digits.startsWith('7')) {
+                digits = '7' + digits;
+            }
+            
+            // Ограничиваем длину до 11 цифр
+            digits = digits.substring(0, 11);
+            
+            // Устанавливаем значение
+            e.target.value = '+' + digits;
+            
+            // Триггерим событие input для автозаполнения
+            e.target.dispatchEvent(new Event('input', { bubbles: true }));
+        });
         
         function handleServiceChange() {
             const serviceSelect = document.getElementById('service');
