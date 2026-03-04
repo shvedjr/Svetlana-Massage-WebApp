@@ -1051,6 +1051,7 @@
         }
 
         function show(c) {
+            console.log(`show: client.id=${c.id}, client.name="${c.name}", visits count=${c.visits.length}`);
             curC = c.id; 
             var cont = document.getElementById('m-content');
             var rawPhone = c.phone || "";
@@ -1082,6 +1083,7 @@
                 
                 let isCancelled = (v.status === "Отменен") || (v.result_status || v.result || "").includes("ОТМЕНЕНО");
                 let isDone = (v.status === "Выполнен") || (v.result_status || v.result || "").includes("ВЫПОЛНЕНО");
+                console.log(`show: visit.id=${v.id}, service="${v.service}", status="${v.status}", result="${v.result}", isCancelled=${isCancelled}, isDone=${isDone}`);
                 let cardClass = "v-card";
                 if(isCancelled) cardClass += " cancelled";
                 if(isDone) cardClass += " done";
@@ -1617,6 +1619,7 @@
             curV = id; 
             curService = service;
             curVisitStatus = status || 'planned'; // СОХРАНЯЕМ ТЕКУЩИЙ СТАТУС
+            console.log(`openE: id=${id}, service="${service}", status="${status}"`);
             document.getElementById('e-title').innerText = `🛠 ${service} (${date})`;
             document.getElementById('e-comm').value = comm; 
             curEditStatus = "";
@@ -1664,6 +1667,8 @@
             let displayTitle = document.getElementById('e-title').innerText;
             let sessionInfo = displayTitle.replace('🛠 ', '').split(' (')[0];
             
+            console.log(`saveE: curV=${curV}, curEditStatus=${curEditStatus}, client found=${!!client}`);
+            
             // Сохраняем изменения локально
             if (!pendingChanges.visits[curV]) {
                 pendingChanges.visits[curV] = {};
@@ -1678,10 +1683,15 @@
                 old_status: curVisitStatus
             };
             
+            console.log(`saveE: pendingChanges.visits[${curV}] =`, pendingChanges.visits[curV]);
+            
             // Обновляем визит локально
             if (client) {
                 const visit = client.visits.find(v => v.id === curV);
+                console.log(`saveE: visit found=${!!visit}, visit.id=${visit?.id}, visit.service=${visit?.service}`);
+                
                 if (visit) {
+                    const oldStatus = visit.status;
                     visit.comment = pendingChanges.visits[curV].comment;
                     visit.result = finalRes;
                     if (curEditStatus === 'ВЫПОЛНЕНО') {
@@ -1689,14 +1699,19 @@
                     } else if (curEditStatus === 'ОТМЕНЕНО') {
                         visit.status = 'Отменен';
                     }
+                    console.log(`saveE: updated visit status from ${oldStatus} to ${visit.status}`);
+                } else {
+                    console.error(`saveE: visit with id=${curV} not found in client.visits`);
                 }
             }
             
             markAsChanged();
             closeAllEditBoxes();
             
+            console.log(`saveE: calling show() to refresh card`);
             // Обновляем отображение карточки
             show(client);
+            // Модальное окно карточки клиента уже открыто, просто показываем его снова
             document.getElementById('modal').style.display = 'flex';
         }
 
