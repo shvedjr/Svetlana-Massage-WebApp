@@ -1169,14 +1169,29 @@
             document.querySelectorAll('#service-tags .tag').forEach(t => t.classList.remove('selected'));
             el.classList.add('selected');
             
-            // Показываем/скрываем поле места проведения
+            // Управление отображением места проведения и адреса
             const locationBox = document.getElementById('location-select-box');
             const locationSelect = document.getElementById('av-location');
-            if (s === 'Консультация оффлайн') {
+            const addressBox = document.getElementById('av-address-box');
+            const addressInput = document.getElementById('av-address');
+            
+            if (s === 'Консультация онлайн') {
+                // Онлайн: скрываем место и адрес
                 locationBox.style.display = 'none';
                 locationSelect.value = '';
+                addressBox.style.display = 'none';
+                addressInput.value = '';
+            } else if (s === 'Консультация оффлайн') {
+                // Оффлайн: скрываем место, показываем адрес (не обязательный)
+                locationBox.style.display = 'none';
+                locationSelect.value = '';
+                addressBox.style.display = 'block';
+                addressInput.readOnly = false;
+                addressInput.style.backgroundColor = '';
             } else {
+                // Остальные услуги: показываем место
                 locationBox.style.display = 'block';
+                // Адрес будет показан/скрыт в handleAddVisitLocationChange
             }
         }
 
@@ -1189,8 +1204,11 @@
             const price = parseFloat(priceInput.value) || 0;
             if (!date || !time) return alert("Выберите дату и время!");
             
-            // Проверка места проведения (кроме Консультация оффлайн)
-            if (selectedService !== 'Консультация оффлайн' && !location) {
+            // Проверка места проведения (кроме консультаций)
+            const isOnlineConsultation = selectedService === 'Консультация онлайн';
+            const isOfflineConsultation = selectedService === 'Консультация оффлайн';
+            
+            if (!isOnlineConsultation && !isOfflineConsultation && !location) {
                 return alert("⚠️ Выберите место проведения (Дом или Выезд)!");
             }
             
