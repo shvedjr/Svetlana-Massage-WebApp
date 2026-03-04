@@ -183,32 +183,35 @@
         let allClients = [];
 
         document.getElementById('phone').addEventListener('input', function (e) {
-            // Удаляем все нецифровые символы (включая +, пробелы, скобки и т.д.)
-            let x = e.target.value.replace(/\D/g, ''); 
+            // Разрешаем только цифры, скобки (), тире -, пробелы и +
+            let input = e.target.value.replace(/[^\d()\-\s+]/g, '');
+            
+            // Извлекаем только цифры для обработки
+            let digits = input.replace(/\D/g, ''); 
             
             // Если ничего не введено - очищаем поле
-            if (x.length === 0) {
+            if (digits.length === 0) {
                 e.target.value = '';
                 return;
             }
             
             // Если первая цифра 8 - заменяем на 7
-            if (x.startsWith('8')) {
-                x = '7' + x.substring(1);
+            if (digits.startsWith('8')) {
+                digits = '7' + digits.substring(1);
             }
             // Если первая цифра НЕ 7 - добавляем 7 в начало
-            else if (!x.startsWith('7')) {
-                x = '7' + x;
+            else if (!digits.startsWith('7')) {
+                digits = '7' + digits;
             }
             
             // Ограничиваем длину до 11 цифр (7 + 10 цифр номера)
-            x = x.substring(0, 11); 
+            digits = digits.substring(0, 11); 
             
             // Всегда показываем с +
-            e.target.value = '+' + x;
+            e.target.value = '+' + digits;
 
-            if (x.length === 11) {
-                const dup = allClients.find(c => c.phone && c.phone.replace(/\D/g, '') === x);
+            if (digits.length === 11) {
+                const dup = allClients.find(c => c.phone && c.phone.replace(/\D/g, '') === digits);
                 if (dup) {
                     if (!document.getElementById('p_name').value) document.getElementById('p_name').value = dup.name || '';
                     if (!document.getElementById('c_name').value) document.getElementById('c_name').value = dup.child_name || '';
