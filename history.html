@@ -1688,25 +1688,7 @@
         function saveComplaints() { 
             const btn = document.querySelector('#complaints-edit-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
-            const complaintsValue = document.getElementById('e-complaints').value;
-            
-            // Обновляем данные локально
-            const client = allClients.find(c => c.id === curC);
-            if (client) {
-                client.comment = complaintsValue;
-                
-                // Закрываем модальное окно редактирования
-                closeEditBox();
-                
-                // Обновляем отображение карточки клиента
-                show(client);
-                
-                // Открываем модальное окно с обновленной карточкой
-                document.getElementById('modal').style.display = 'flex';
-            }
-            
-            // Отправляем данные боту
-            sendToBot({ action: 'edit_complaints', client_id: curC, complaints: complaintsValue });
+            sendToBot({ action: 'edit_complaints', client_id: curC, complaints: document.getElementById('e-complaints').value });
         }
 
         function saveClient() {
