@@ -291,6 +291,11 @@
             color: white;
             box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
+        .status-badge.tomorrow {
+            background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+        }
         .status-badge.completed {
             background: linear-gradient(135deg, #757575 0%, #9e9e9e 100%);
             color: white;
@@ -721,8 +726,10 @@
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+            const tomorrowEnd = new Date(todayStart.getTime() + 48 * 60 * 60 * 1000);
             
             let hasToday = false;
+            let hasTomorrow = false;
             let hasFuture = false;
             let hasActive = false;
             
@@ -732,6 +739,8 @@
                     const visitDate = new Date(v.date);
                     if (visitDate >= todayStart && visitDate < todayEnd) {
                         hasToday = true;
+                    } else if (visitDate >= todayEnd && visitDate < tomorrowEnd) {
+                        hasTomorrow = true;
                     } else if (visitDate >= now) {
                         hasFuture = true;
                     }
@@ -742,6 +751,7 @@
             });
             
             if (hasToday) return { status: 'in-progress', text: 'Сегодня', badge: 'in-progress' };
+            if (hasTomorrow) return { status: 'tomorrow', text: 'Завтра', badge: 'tomorrow' };
             if (hasFuture) return { status: 'waiting', text: 'Ожидает', badge: 'waiting' };
             if (hasActive) return { status: 'completed', text: 'Завершён', badge: 'completed' };
             return { status: 'completed', text: 'Завершён', badge: 'completed' };
