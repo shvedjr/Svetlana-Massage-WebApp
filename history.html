@@ -1661,9 +1661,39 @@
                 }
             }
             
+            // Получаем дату визита для валидации
+            const client = allClients.find(c => c.id === curC);
+            if (!client) {
+                alert("⚠️ Ошибка: клиент не найден!");
+                return;
+            }
+            
+            const visit = client.visits.find(v => v.id === curV);
+            if (!visit) {
+                alert("⚠️ Ошибка: визит не найден!");
+                return;
+            }
+            
+            // Проверяем дату визита
+            const visitDate = new Date(visit.date);
+            const now = new Date();
+            const isPast = visitDate < now;
+            const isFuture = visitDate > now;
+            
+            // ВАЛИДАЦИЯ: нельзя вернуть в "Ожидает" если дата уже прошла
+            if (!curEditStatus && isPast) {
+                alert("⚠️ Нельзя вернуть в статус 'Ожидает' визит с прошедшей датой!\n\nВыберите статус 'Выполнено' или 'Отменено'.");
+                return;
+            }
+            
+            // ВАЛИДАЦИЯ: нельзя отметить "Выполнено" если дата еще не наступила
+            if (curEditStatus === 'ВЫПОЛНЕНО' && isFuture) {
+                alert("⚠️ Нельзя отметить 'Выполнено' визит с будущей датой!\n\nДождитесь наступления даты визита или измените дату.");
+                return;
+            }
+            
             let finalRes = document.getElementById('e-res').value.trim();
             if(curEditStatus) finalRes = curEditStatus + (finalRes ? ", " + finalRes : "");
-            const client = allClients.find(c => c.id === curC);
             let displayTitle = document.getElementById('e-title').innerText;
             let sessionInfo = displayTitle.replace('🛠 ', '').split(' (')[0];
             
@@ -1686,27 +1716,18 @@
             console.log(`saveE: pendingChanges.visits[${curV}] =`, pendingChanges.visits[curV]);
             
             // Обновляем визит локально
-            if (client) {
-                const visit = client.visits.find(v => v.id === curV);
-                console.log(`saveE: visit found=${!!visit}, visit.id=${visit?.id}, visit.service=${visit?.service}`);
-                
-                if (visit) {
-                    const oldStatus = visit.status;
-                    visit.comment = pendingChanges.visits[curV].comment;
-                    visit.result = finalRes;
-                    if (curEditStatus === 'ВЫПОЛНЕНО') {
-                        visit.status = 'Выполнен';
-                    } else if (curEditStatus === 'ОТМЕНЕНО') {
-                        visit.status = 'Отменен';
-                    } else {
-                        // Если статус не выбран - возвращаем в "Ожидает"
-                        visit.status = 'planned';
-                    }
-                    console.log(`saveE: updated visit status from ${oldStatus} to ${visit.status}`);
-                } else {
-                    console.error(`saveE: visit with id=${curV} not found in client.visits`);
-                }
+            const oldStatus = visit.status;
+            visit.comment = pendingChanges.visits[curV].comment;
+            visit.result = finalRes;
+            if (curEditStatus === 'ВЫПОЛНЕНО') {
+                visit.status = 'Выполнен';
+            } else if (curEditStatus === 'ОТМЕНЕНО') {
+                visit.status = 'Отменен';
+            } else {
+                // Если статус не выбран - возвращаем в "Ожидает"
+                visit.status = 'planned';
             }
+            console.log(`saveE: updated visit status from ${oldStatus} to ${visit.status}`);
             
             markAsChanged();
             closeAllEditBoxes();
