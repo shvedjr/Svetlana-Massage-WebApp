@@ -1691,7 +1691,7 @@
             const complaintsValue = document.getElementById('e-complaints').value;
             
             // Обновляем данные локально перед отправкой
-            const client = clients.find(c => c.id === curC);
+            const client = allClients.find(c => c.id === curC);
             if (client) {
                 client.comment = complaintsValue;
             }
