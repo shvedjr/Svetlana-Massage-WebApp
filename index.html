@@ -266,7 +266,7 @@
             }
             
             // Показываем/скрываем блок ребёнка
-            const isAdult = selectedService.includes('взрослый') || selectedService === 'Консультация оффлайн';
+            const isAdult = selectedService.includes('взрослый');
             childBlock.style.display = isAdult ? 'none' : 'block';
             pLabel.innerText = isAdult ? 'ФИО Клиента' : 'Имя родителя';
         }
@@ -365,7 +365,7 @@
             }
             
             // Обязательные поля для детского массажа
-            const isAdultService = serviceName.includes('взрослый') || serviceName === 'Консультация оффлайн';
+            const isAdultService = serviceName.includes('взрослый');
             if (!isAdultService) {
                 if (!d.child_name) {
                     tg.showAlert("❌ Укажите имя ребенка");
