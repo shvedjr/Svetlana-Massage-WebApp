@@ -237,25 +237,30 @@
             
             const selectedService = serviceSelect.value;
             
-            // Для консультаций скрываем место проведения и адрес
-            const isConsultation = selectedService === 'Консультация онлайн' || selectedService === 'Консультация оффлайн';
-            
-            if (isConsultation) {
-                // Скрываем место проведения
+            // Для консультации онлайн скрываем место проведения и адрес
+            // Для консультации оффлайн скрываем только место проведения (адрес показываем, но не обязательный)
+            if (selectedService === 'Консультация онлайн') {
+                // Онлайн: скрываем место и адрес
                 locationBlock.style.display = 'none';
                 locationSelect.removeAttribute('required');
                 locationSelect.value = '';
                 
-                // Скрываем адрес
                 addressBlock.style.display = 'none';
                 addrInput.removeAttribute('required');
                 addrInput.value = '';
+            } else if (selectedService === 'Консультация оффлайн') {
+                // Оффлайн: скрываем место, показываем адрес (не обязательный)
+                locationBlock.style.display = 'none';
+                locationSelect.removeAttribute('required');
+                locationSelect.value = '';
+                
+                addressBlock.style.display = 'block';
+                addrInput.removeAttribute('required'); // Не обязательный
             } else if (selectedService) {
-                // Показываем место проведения
+                // Остальные услуги: показываем место и адрес (оба обязательные)
                 locationBlock.style.display = 'block';
                 locationSelect.setAttribute('required', 'required');
                 
-                // Показываем адрес
                 addressBlock.style.display = 'block';
                 addrInput.setAttribute('required', 'required');
             }
@@ -297,8 +302,10 @@
             }
             
             // Проверка места проведения (кроме консультаций)
-            const isConsultation = serviceName === 'Консультация онлайн' || serviceName === 'Консультация оффлайн';
-            if (!isConsultation && !locationValue) {
+            const isOnlineConsultation = serviceName === 'Консультация онлайн';
+            const isOfflineConsultation = serviceName === 'Консультация оффлайн';
+            
+            if (!isOnlineConsultation && !isOfflineConsultation && !locationValue) {
                 alert('⚠️ Пожалуйста, выберите место проведения');
                 return;
             }
@@ -337,8 +344,8 @@
                 tg.showAlert("❌ Укажите имя родителя/клиента");
                 return;
             }
-            // Проверка адреса (не требуется для консультаций)
-            if (!isConsultation && !d.address) {
+            // Проверка адреса (не требуется только для онлайн консультации)
+            if (!isOnlineConsultation && !d.address) {
                 tg.showAlert("❌ Укажите адрес");
                 return;
             }
