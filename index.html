@@ -126,20 +126,23 @@
             <div class="input-group"><label>Имя ребенка</label><input type="text" id="c_name" placeholder="Как зовут?"></div>
             <div class="input-group" style="margin:0;"><label>Возраст</label><input type="text" id="c_age" placeholder="пример: 6 месяцев"></div>
         </div>
-        <div class="input-group"><label>Адрес</label><input type="text" id="addr" placeholder="Город, улица, дом"></div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px;">
-            <div>
-                <label>Подъезд</label>
-                <input type="number" id="entrance" placeholder="№" style="margin-bottom: 0;" inputmode="numeric" pattern="[0-9]*">
-            </div>
-            <div>
-                <label>Этаж</label>
-                <input type="number" id="floor" placeholder="№" style="margin-bottom: 0;" inputmode="numeric" pattern="[0-9]*">
-            </div>
-            <div>
-                <label>Домофон</label>
-                <input type="text" id="intercom" placeholder="Код" style="margin-bottom: 0;">
+        <div id="address_block">
+            <div class="input-group"><label>Адрес</label><input type="text" id="addr" placeholder="Город, улица, дом"></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px;">
+                <div>
+                    <label>Подъезд</label>
+                    <input type="number" id="entrance" placeholder="№" style="margin-bottom: 0;" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div>
+                    <label>Этаж</label>
+                    <input type="number" id="floor" placeholder="№" style="margin-bottom: 0;" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div>
+                    <label>Домофон</label>
+                    <input type="text" id="intercom" placeholder="Код" style="margin-bottom: 0;">
+                </div>
             </div>
         </div>
         
@@ -227,19 +230,34 @@
             const serviceSelect = document.getElementById('service');
             const locationBlock = document.getElementById('location_block');
             const locationSelect = document.getElementById('location');
+            const addressBlock = document.getElementById('address_block');
+            const addrInput = document.getElementById('addr');
             const childBlock = document.getElementById('child_block');
             const pLabel = document.getElementById('p_label');
             
             const selectedService = serviceSelect.value;
             
-            // Показываем/скрываем блок места проведения
-            if (selectedService === 'Консультация оффлайн') {
+            // Для консультаций скрываем место проведения и адрес
+            const isConsultation = selectedService === 'Консультация онлайн' || selectedService === 'Консультация оффлайн';
+            
+            if (isConsultation) {
+                // Скрываем место проведения
                 locationBlock.style.display = 'none';
                 locationSelect.removeAttribute('required');
                 locationSelect.value = '';
+                
+                // Скрываем адрес
+                addressBlock.style.display = 'none';
+                addrInput.removeAttribute('required');
+                addrInput.value = '';
             } else if (selectedService) {
+                // Показываем место проведения
                 locationBlock.style.display = 'block';
                 locationSelect.setAttribute('required', 'required');
+                
+                // Показываем адрес
+                addressBlock.style.display = 'block';
+                addrInput.setAttribute('required', 'required');
             }
             
             // Показываем/скрываем блок ребёнка
@@ -278,8 +296,9 @@
                 return;
             }
             
-            // Проверка места проведения (кроме Консультация оффлайн)
-            if (serviceName !== 'Консультация оффлайн' && !locationValue) {
+            // Проверка места проведения (кроме консультаций)
+            const isConsultation = serviceName === 'Консультация онлайн' || serviceName === 'Консультация оффлайн';
+            if (!isConsultation && !locationValue) {
                 alert('⚠️ Пожалуйста, выберите место проведения');
                 return;
             }
@@ -318,7 +337,8 @@
                 tg.showAlert("❌ Укажите имя родителя/клиента");
                 return;
             }
-            if (!d.address) {
+            // Проверка адреса (не требуется для консультаций)
+            if (!isConsultation && !d.address) {
                 tg.showAlert("❌ Укажите адрес");
                 return;
             }
