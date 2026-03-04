@@ -1688,7 +1688,15 @@
         function saveComplaints() { 
             const btn = document.querySelector('#complaints-edit-box .save-btn');
             btn.innerText = "СОХРАНЯЕМ..."; btn.style.opacity = "0.5";
-            sendToBot({ action: 'edit_complaints', client_id: curC, complaints: document.getElementById('e-complaints').value });
+            const complaintsValue = document.getElementById('e-complaints').value;
+            
+            // Обновляем данные локально перед отправкой
+            const client = clients.find(c => c.id === curC);
+            if (client) {
+                client.comment = complaintsValue;
+            }
+            
+            sendToBot({ action: 'edit_complaints', client_id: curC, complaints: complaintsValue });
         }
 
         function saveClient() {
