@@ -399,9 +399,8 @@
             }).join('');
 
             const avg = count > 0 ? Math.round(total / count) : 0;
-            const debtors = db.clients.filter(c => ((c.c || 0) - (c.p || 0)) > 0);
-            const totalRemainingDebt = debtors.reduce((acc, c) => acc + ((c.c || 0) - (c.p || 0)), 0);
             const totalContractsAllTime = db.clients.reduce((acc, c) => acc + (c.c || 0), 0);
+            const totalEarnedAllTime = db.clients.reduce((acc, c) => acc + (c.e || 0), 0);
 
             const summaryHtml = `
                 <div class="summary-grid">
@@ -424,9 +423,9 @@
                 </div>
 
                 <div class="total-summary" style="margin-bottom:20px; background: #2d3436;">
-                    <div style="font-weight:700; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; font-size:0.85rem">АНАЛИЗ ДОЛГОВ (ВСЕ ВРЕМЯ):</div>
-                    <div class="total-row"><span>Общий объем договоров:</span><span>${totalContractsAllTime.toLocaleString()} ₽</span></div>
-                    <div class="total-row debt" style="margin-bottom:0; color:#ff758c"><span>Текущая дебиторка:</span><span>${totalRemainingDebt.toLocaleString()} ₽</span></div>
+                    <div style="font-weight:700; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; font-size:0.85rem">ФИНАНСОВАЯ СТАТИСТИКА (ВСЕ ВРЕМЯ):</div>
+                    <div class="total-row"><span>Общая стоимость:</span><span>${totalContractsAllTime.toLocaleString()} ₽</span></div>
+                    <div class="total-row" style="margin-bottom:0; color:#2ecc71"><span>Прибыль:</span><span>${totalEarnedAllTime.toLocaleString()} ₽</span></div>
                 </div>
 
                 <h3 style="font-size:1rem; margin:20px 0 10px 5px">История поступлений</h3>
@@ -468,7 +467,7 @@
         function runDetReport() {
             impact('heavy');
             const {s, e} = getDates('det');
-            let totalContract = 0, totalPaid = 0, totalDebt = 0;
+            let totalContract = 0, totalEarned = 0;
 
             const activeClientIds = [...new Set(db.visits
                 .filter(v => { const d = parseDate(v.d); return d >= s && d <= e; })
@@ -487,35 +486,31 @@
                 .sort((a, b) => (clientLastVisit[b.i] || 0) - (clientLastVisit[a.i] || 0));
 
             const html = filteredClients.map(c => {
-                const debt = (c.c || 0) - (c.p || 0); 
-                totalContract += (c.c || 0);
-                totalPaid += (c.p || 0);
-                totalDebt += debt; 
+                const earned = c.e || 0;
+                const contract = c.c || 0;
+                totalContract += contract;
+                totalEarned += earned;
                 const lastDate = clientLastVisit[c.i] ? clientLastVisit[c.i].toLocaleDateString('ru') : '---';
 
                 return `
                 <div class="stat-row" style="flex-direction:column">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <span class="label"><b>${c.n}</b></span>
-                        <span style="font-weight: 800; color: var(--info-blue); font-size: 1.35rem; text-align: right;">${(c.p || 0).toLocaleString()} ₽</span>
+                        <span style="font-weight: 800; color: #2ecc71; font-size: 1.35rem; text-align: right;">${earned.toLocaleString()} ₽</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px">
-                        <div style="font-size:0.85rem; color:var(--dark); opacity:0.8;">Договор: ${(c.c || 0).toLocaleString()} ₽</div>
+                        <div style="font-size:0.85rem; color:var(--dark); opacity:0.8;">Стоимость: ${contract.toLocaleString()} ₽</div>
                         <div style="font-size:0.7rem; color:var(--hint);">Посл. сеанс: ${lastDate}</div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end; font-size:0.95rem; margin-top:8px; font-weight:700;">
-                        <span style="color:${debt > 0 ? '#e63946' : '#2a9d8f'}">Долг: ${debt.toLocaleString()} ₽</span>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${(c.c > 0 ? (c.p/c.c)*100 : 0)}%"></div></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${(contract > 0 ? (earned/contract)*100 : 0)}%"></div></div>
                 </div>`;
             }).join('');
 
             const finalSummary = `
                 <div class="total-summary">
                     <div style="font-weight:700; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:10px; opacity:0.8">ИТОГИ ПО ВЫБРАННЫМ:</div>
-                    <div class="total-row"><span>Объем договоров:</span><span>${totalContract.toLocaleString()} ₽</span></div>
-                    <div class="total-row debt"><span>Общий долг:</span><span>${totalDebt.toLocaleString()} ₽</span></div>
-                    <div class="total-row big"><span>ВСЕГО ОПЛАЧЕНО:</span><span>${totalPaid.toLocaleString()} ₽</span></div>
+                    <div class="total-row"><span>Общая стоимость:</span><span>${totalContract.toLocaleString()} ₽</span></div>
+                    <div class="total-row big" style="color:#2ecc71"><span>ПРИБЫЛЬ:</span><span>${totalEarned.toLocaleString()} ₽</span></div>
                 </div>
             `;
             document.getElementById('res_det').innerHTML = (html || '<div style="text-align:center; padding:20px">За этот период сеансов не было</div>') + (html ? finalSummary : '');
