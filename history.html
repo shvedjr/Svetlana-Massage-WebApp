@@ -652,7 +652,7 @@
         
         var allClients = []; 
         var currentMode = 'all';
-        var currentSort = 'added';
+        var currentSort = 'date'; // По умолчанию сортировка по дате
         var curV, curC;
         var curEditStatus = "";
         var curVisitStatus = ""; // ДОБАВИЛИ: хранит исходный статус визита
@@ -697,6 +697,9 @@
                         document.getElementById('archive-bar').style.display = 'block';
                     }
                     
+                    // Устанавливаем активную кнопку сортировки по дате
+                    document.getElementById('s-date').className = 's-btn active';
+                    
                     render();
                     checkDirectAccess();
                 } catch (e) { 
@@ -705,6 +708,10 @@
                 }
             } else if (rawFull) {
                 allClients = JSON.parse(decodeURIComponent(rawFull));
+                
+                // Устанавливаем активную кнопку сортировки по дате
+                document.getElementById('s-date').className = 's-btn active';
+                
                 render();
                 checkDirectAccess();
             } else {
@@ -918,13 +925,26 @@
                 displayList.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
             } else if (currentSort === 'date') {
                 // Сортировка по дате ближайшего сеанса (самая близкая к настоящему времени - первая)
+                const now = new Date();
                 displayList.sort((a, b) => {
-                    const dateA = getNextVisitDate(a);
-                    const dateB = getNextVisitDate(b);
+                    const dateInfoA = getNextVisitDate(a);
+                    const dateInfoB = getNextVisitDate(b);
+                    
+                    const dateA = dateInfoA.nextVisit || dateInfoA.lastVisit;
+                    const dateB = dateInfoB.nextVisit || dateInfoB.lastVisit;
+                    
+                    // Если у обоих нет дат - равны
                     if (!dateA && !dateB) return 0;
+                    // Если у A нет даты - он в конец
                     if (!dateA) return 1;
+                    // Если у B нет даты - он в конец
                     if (!dateB) return -1;
-                    return dateA - dateB;
+                    
+                    // Сортируем по близости к текущему времени
+                    const diffA = Math.abs(dateA - now);
+                    const diffB = Math.abs(dateB - now);
+                    
+                    return diffA - diffB;
                 });
             } else {
                 // Сортировка по ID в обратном порядке (последний добавленный - первый)
@@ -1003,7 +1023,7 @@
 
         function setF(m) {
             currentMode = m;
-            currentSort = 'added'; // При смене фильтра сбрасываем сортировку на "по добавлению"
+            // Не сбрасываем сортировку при смене фильтра
             document.getElementById('f-all').className = m === 'all' ? 'f-btn active' : 'f-btn';
             document.getElementById('f-today').className = m === 'today' ? 'f-btn active' : 'f-btn';
             document.getElementById('f-tomorrow').className = m === 'tomorrow' ? 'f-btn active' : 'f-btn';
