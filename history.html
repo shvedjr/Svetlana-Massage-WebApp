@@ -611,6 +611,7 @@
         <button class="save-btn" onclick="saveClient()">ОБНОВИТЬ ДАННЫЕ</button>
     </div>
 
+    <!-- СТАРАЯ ЛОГИКА: Модальное окно оплаты (закомментировано)
     <div id="pay-box">
         <h4 style="margin-top:0; color: var(--dark); text-align: center;">💵 Зачислить оплату</h4>
         <div class="box-label" style="margin-bottom:5px;">Сумма оплаты (₽)</div>
@@ -624,6 +625,7 @@
         <input type="number" id="plan-amount" class="inp" placeholder="Например: 15000" inputmode="numeric">
         <button class="save-btn" onclick="savePlan()">ОБНОВИТЬ ПЛАН</button>
     </div>
+    -->
 
     <div id="datetime-edit-box">
         <h4 style="margin-top:0; color: var(--dark); text-align: center;">📅 Изменить дату и время</h4>
@@ -667,8 +669,8 @@
         let pendingChanges = {
             clientProfile: null,      // Изменения профиля клиента
             visits: {},               // Изменения визитов {visitId: {changes}}
-            payments: [],             // Новые платежи
-            plan: null,               // Изменение плана
+            // payments: [],          // СТАРАЯ ЛОГИКА: Новые платежи (закомментировано)
+            // plan: null,            // СТАРАЯ ЛОГИКА: Изменение плана (закомментировано)
             total: null,              // Изменение итога курса
             complaints: null,         // Изменение жалоб
             newVisit: null           // Новый визит
@@ -1157,9 +1159,9 @@
                     </div>
                 </div>`;
             }).join('');
-            var paid = c.total_paid || 0;
-            var debt = plan - paid;
-            var debtColor = debt > 0 ? '#ff5252' : '#2e7d32';
+            
+            // НОВАЯ ЛОГИКА ФИНАНСОВ
+            var earned = c.earned || 0;  // Прибыль = сумма выполненных сеансов
             
             var navUrl = "https://yandex.ru/maps/?text=" + encodeURIComponent(c.address || "");
             var calUrl = "https://calendar.google.com/";
@@ -1183,14 +1185,12 @@
 
                         <div class="info-box b-gold">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="box-label">💰 Кошелёк</span>
+                                <span class="box-label">💰 Финансы</span>
                             </div>
-                            <div style="margin-top:5px; font-weight:bold; font-size:0.9rem; color:var(--dark);">План: ${plan}₽</div>
                             <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:5px;">
-                                <div><div style="font-size:0.7rem; color:var(--hint);">ОПЛАЧЕНО</div><div style="font-size:1.2rem; font-weight:800; color:#2e7d32;">${paid} ₽</div></div>
-                                <div style="text-align:right;"><div style="font-size:0.91rem; color:var(--hint);">ОСТАТОК</div><div style="font-size:1.56rem; font-weight:800; color:${debtColor};">${debt} ₽</div></div>
+                                <div><div style="font-size:0.7rem; color:var(--hint);">СТОИМОСТЬ</div><div style="font-size:1.2rem; font-weight:800; color:var(--dark);">${plan} ₽</div></div>
+                                <div style="text-align:right;"><div style="font-size:0.7rem; color:var(--hint);">ПРИБЫЛЬ</div><div style="font-size:1.2rem; font-weight:800; color:#2e7d32;">${earned} ₽</div></div>
                             </div>
-                            <button class="money-btn" onclick="openPay()">💵 ЗАЧИСЛИТЬ ОПЛАТУ</button>
                         </div>
 
                         <button class="add-visit-btn" onclick="openAddVisit()">➕ ЗАПИСАТЬ НА СЕАНС</button>
@@ -1763,6 +1763,7 @@
             document.getElementById('modal').style.display = 'flex';
         }
 
+        /* СТАРАЯ ЛОГИКА: Функции оплаты и плана (закомментировано)
         function openPay() {
             document.getElementById('pay-amount').value = '';
             openEditBox('pay-box');
@@ -1772,6 +1773,7 @@
             document.getElementById('plan-amount').value = currentPlan;
             openEditBox('plan-box');
         }
+        */
 
         function openClientEdit(c) {
             document.getElementById('ec-name').value = c.name;
@@ -1796,6 +1798,7 @@
             setTimeout(() => { tg.close(); }, 300);
         }
 
+        /* СТАРАЯ ЛОГИКА: Функции сохранения оплаты и плана (закомментировано)
         function savePay() {
             const amount = document.getElementById('pay-amount').value;
             if(!amount) return alert("Введите сумму");
@@ -1840,6 +1843,7 @@
             show(client);
             document.getElementById('modal').style.display = 'flex';
         }
+        */
 
         function saveT() { 
             const totalValue = document.getElementById('e-total').value;
@@ -2049,6 +2053,7 @@
                 });
             });
             
+            /* СТАРАЯ ЛОГИКА: Обработка платежей и плана (закомментировано)
             // Платежи
             pendingChanges.payments.forEach(payment => {
                 allChanges.push({
@@ -2066,6 +2071,7 @@
                     amount: pendingChanges.plan
                 });
             }
+            */
             
             // Итог курса
             if (pendingChanges.total !== null) {
