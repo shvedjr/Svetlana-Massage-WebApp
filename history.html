@@ -2173,6 +2173,14 @@
             e.target.value = '+' + digits;
         });
 
+        // Обработчик для закрытия модальных окон при клике вне их области
+        document.addEventListener('click', function(e) {
+            const overlay = document.getElementById('overlay');
+            if (overlay.style.display === 'block' && e.target === overlay) {
+                closeAllEditBoxes();
+            }
+        });
+
         loadData();
     </script>
 </body>
