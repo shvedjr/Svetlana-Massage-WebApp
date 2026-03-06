@@ -2147,6 +2147,27 @@
             }
         }
 
+        // Обработчик для поля телефона в форме редактирования клиента
+        document.getElementById('ec-phone').addEventListener('input', function (e) {
+            // Разрешаем только цифры, скобки (), тире -, пробелы и +
+            let input = e.target.value.replace(/[^\d()\-\s+]/g, '');
+            
+            // Извлекаем только цифры для обработки
+            let digits = input.replace(/\D/g, ''); 
+            
+            // Если ничего не введено - очищаем поле
+            if (digits.length === 0) {
+                e.target.value = '';
+                return;
+            }
+            
+            // Ограничиваем длину до 11 цифр (любые цифры)
+            digits = digits.substring(0, 11); 
+            
+            // Всегда показываем с +
+            e.target.value = '+' + digits;
+        });
+
         loadData();
     </script>
 </body>
