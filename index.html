@@ -253,18 +253,8 @@
             
             const selectedService = serviceSelect.value;
             
-            // Для консультации онлайн скрываем место проведения и адрес
             // Для консультации оффлайн скрываем только место проведения (адрес показываем, но не обязательный)
-            if (selectedService === 'Консультация онлайн') {
-                // Онлайн: скрываем место и адрес
-                locationBlock.style.display = 'none';
-                locationSelect.removeAttribute('required');
-                locationSelect.value = '';
-                
-                addressBlock.style.display = 'none';
-                addrInput.removeAttribute('required');
-                addrInput.value = '';
-            } else if (selectedService === 'Консультация оффлайн') {
+            if (selectedService === 'Консультация оффлайн') {
                 // Оффлайн: скрываем место, показываем адрес (не обязательный)
                 locationBlock.style.display = 'none';
                 locationSelect.removeAttribute('required');
@@ -273,7 +263,7 @@
                 addressBlock.style.display = 'block';
                 addrInput.removeAttribute('required'); // Не обязательный
             } else if (selectedService) {
-                // Остальные услуги: показываем место и адрес (оба обязательные)
+                // Остальные услуги (включая Консультация онлайн): показываем место и адрес (оба обязательные)
                 locationBlock.style.display = 'block';
                 locationSelect.setAttribute('required', 'required');
                 
@@ -282,7 +272,7 @@
             }
             
             // Показываем/скрываем блок ребёнка
-            const isAdult = selectedService.includes('взрослый');
+            const isAdult = selectedService.includes('взрослый') || selectedService === 'Консультация оффлайн';
             childBlock.style.display = isAdult ? 'none' : 'block';
             pLabel.innerText = isAdult ? 'ФИО Клиента' : 'Имя родителя';
         }
