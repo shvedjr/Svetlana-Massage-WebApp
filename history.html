@@ -926,28 +926,58 @@
             if (currentSort === 'alpha') {
                 displayList.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
             } else if (currentSort === 'date') {
-                // Сортировка по дате ближайшего сеанса (самая близкая к настоящему времени - первая)
                 const now = new Date();
-                displayList.sort((a, b) => {
-                    const dateInfoA = getNextVisitDate(a);
-                    const dateInfoB = getNextVisitDate(b);
-                    
-                    const dateA = dateInfoA.nextVisit || dateInfoA.lastVisit;
-                    const dateB = dateInfoB.nextVisit || dateInfoB.lastVisit;
-                    
-                    // Если у обоих нет дат - равны
-                    if (!dateA && !dateB) return 0;
-                    // Если у A нет даты - он в конец
-                    if (!dateA) return 1;
-                    // Если у B нет даты - он в конец
-                    if (!dateB) return -1;
-                    
-                    // Сортируем по близости к текущему времени
-                    const diffA = Math.abs(dateA - now);
-                    const diffB = Math.abs(dateB - now);
-                    
-                    return diffA - diffB;
-                });
+                
+                // Для фильтров "Сегодня" и "Завтра" - простая сортировка по времени
+                if (currentMode === 'today' || currentMode === 'tomorrow') {
+                    displayList.sort((a, b) => {
+                        const dateInfoA = getNextVisitDate(a);
+                        const dateInfoB = getNextVisitDate(b);
+                        
+                        const dateA = dateInfoA.nextVisit || dateInfoA.lastVisit;
+                        const dateB = dateInfoB.nextVisit || dateInfoB.lastVisit;
+                        
+                        if (!dateA && !dateB) return 0;
+                        if (!dateA) return 1;
+                        if (!dateB) return -1;
+                        
+                        return dateA - dateB; // Сортировка по времени (раньше - выше)
+                    });
+                } else {
+                    // Для фильтра "ВСЕ" - активные клиенты выше, потом завершенные
+                    displayList.sort((a, b) => {
+                        const dateInfoA = getNextVisitDate(a);
+                        const dateInfoB = getNextVisitDate(b);
+                        
+                        const hasActiveA = !!dateInfoA.nextVisit; // Есть будущие сеансы
+                        const hasActiveB = !!dateInfoB.nextVisit;
+                        
+                        // Если один активный, а другой завершенный - активный выше
+                        if (hasActiveA && !hasActiveB) return -1;
+                        if (!hasActiveA && hasActiveB) return 1;
+                        
+                        // Если оба активные - сортируем по близости к текущему времени
+                        if (hasActiveA && hasActiveB) {
+                            const diffA = Math.abs(dateInfoA.nextVisit - now);
+                            const diffB = Math.abs(dateInfoB.nextVisit - now);
+                            return diffA - diffB;
+                        }
+                        
+                        // Если оба завершенные - сортируем по дате последнего сеанса (новые выше)
+                        if (!hasActiveA && !hasActiveB) {
+                            const lastA = dateInfoA.lastVisit;
+                            const lastB = dateInfoB.lastVisit;
+                            
+                            if (!lastA && !lastB) return 0;
+                            if (!lastA) return 1;
+                            if (!lastB) return -1;
+                            
+                            return lastB - lastA; // Обратная сортировка (новые выше)
+                        }
+                        
+                        return 0;
+                    });
+                }
             } else {
                 // Сортировка по ID в обратном порядке (последний добавленный - первый)
                 displayList.sort((a, b) => b.id - a.id);
