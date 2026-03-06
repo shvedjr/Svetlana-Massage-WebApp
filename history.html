@@ -781,7 +781,8 @@
                 if (v.status === 'Отменен') return;
                 try {
                     const visitDate = new Date(v.date);
-                    if (visitDate >= todayStart && visitDate < todayEnd) {
+                    // Проверяем сегодняшние визиты со статусом planned (не завершенные)
+                    if (visitDate >= todayStart && visitDate < todayEnd && v.status === 'planned') {
                         hasToday = true;
                     } else if (visitDate >= todayEnd && visitDate < tomorrowEnd) {
                         hasTomorrow = true;
