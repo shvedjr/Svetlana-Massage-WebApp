@@ -199,13 +199,13 @@
                 return;
             }
             
-            // Ограничиваем длину до 11 цифр (любые цифры)
-            digits = digits.substring(0, 11); 
+            // Ограничиваем длину до 15 цифр (международный формат)
+            digits = digits.substring(0, 15); 
             
             // Всегда показываем с +
             e.target.value = '+' + digits;
 
-            if (digits.length === 11) {
+            if (digits.length >= 10) {
                 const dup = allClients.find(c => c.phone && c.phone.replace(/\D/g, '') === digits);
                 if (dup) {
                     if (!document.getElementById('p_name').value) document.getElementById('p_name').value = dup.name || '';
@@ -236,8 +236,8 @@
             
             if (digits.length === 0) return;
             
-            // Ограничиваем длину до 11 цифр (любые цифры)
-            digits = digits.substring(0, 11);
+            // Ограничиваем длину до 15 цифр (международный формат)
+            digits = digits.substring(0, 15);
             
             // Устанавливаем значение
             e.target.value = '+' + digits;
@@ -378,10 +378,10 @@
                 tg.showAlert("❌ Укажите телефон");
                 return;
             }
-            // Проверка корректности телефона (должен быть + и 11 цифр)
+            // Проверка корректности телефона (должен начинаться с + и содержать цифры)
             const phoneDigits = d.phone.replace(/\D/g, '');
-            if (phoneDigits.length !== 11) {
-                tg.showAlert("❌ Телефон введен некорректно. Должен быть формат +XXXXXXXXXXX (11 цифр)");
+            if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+                tg.showAlert("❌ Телефон введен некорректно. Должен содержать от 10 до 15 цифр");
                 return;
             }
             if (!d.parent_name) {
