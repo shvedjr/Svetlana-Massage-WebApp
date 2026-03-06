@@ -148,6 +148,10 @@
             <div class="input-group"><label>Заметка к адресу</label><input type="text" id="addr_comment" placeholder="Например: зеленая дверь"></div>
         </div>
         
+        <div id="country_city_block" style="display: none;">
+            <div class="input-group"><label>Страна/Город</label><input type="text" id="country_city" placeholder="Например: Москва, Россия"></div>
+        </div>
+        
         <div class="input-group">
             <label>Откуда узнали?</label>
             <select id="source">
@@ -248,13 +252,25 @@
             const locationSelect = document.getElementById('location');
             const addressBlock = document.getElementById('address_block');
             const addrInput = document.getElementById('addr');
+            const countryCityBlock = document.getElementById('country_city_block');
             const childBlock = document.getElementById('child_block');
             const pLabel = document.getElementById('p_label');
             
             const selectedService = serviceSelect.value;
             
-            // Для консультации оффлайн скрываем только место проведения (адрес показываем, но не обязательный)
-            if (selectedService === 'Консультация оффлайн') {
+            // Для консультации онлайн: скрываем место и адрес, показываем страну/город
+            // Для консультации оффлайн: скрываем место, показываем адрес (не обязательный)
+            if (selectedService === 'Консультация онлайн') {
+                locationBlock.style.display = 'none';
+                locationSelect.removeAttribute('required');
+                locationSelect.value = '';
+                
+                addressBlock.style.display = 'none';
+                addrInput.removeAttribute('required');
+                addrInput.value = '';
+                
+                countryCityBlock.style.display = 'block';
+            } else if (selectedService === 'Консультация оффлайн') {
                 // Оффлайн: скрываем место, показываем адрес (не обязательный)
                 locationBlock.style.display = 'none';
                 locationSelect.removeAttribute('required');
@@ -262,13 +278,17 @@
                 
                 addressBlock.style.display = 'block';
                 addrInput.removeAttribute('required'); // Не обязательный
+                
+                countryCityBlock.style.display = 'none';
             } else if (selectedService) {
-                // Остальные услуги (включая Консультация онлайн): показываем место и адрес (оба обязательные)
+                // Остальные услуги: показываем место и адрес (оба обязательные)
                 locationBlock.style.display = 'block';
                 locationSelect.setAttribute('required', 'required');
                 
                 addressBlock.style.display = 'block';
                 addrInput.setAttribute('required', 'required');
+                
+                countryCityBlock.style.display = 'none';
             }
             
             // Показываем/скрываем блок ребёнка
@@ -343,6 +363,7 @@
                 floor: document.getElementById('floor').value.trim(),
                 intercom: document.getElementById('intercom').value.trim(),
                 address_comment: document.getElementById('addr_comment').value.trim(),
+                country_city: document.getElementById('country_city').value.trim(),
                 datetime: dateTimeValue, 
                 comment: document.getElementById('comm').value.trim(), 
                 child_name: document.getElementById('c_name').value.trim(), 
