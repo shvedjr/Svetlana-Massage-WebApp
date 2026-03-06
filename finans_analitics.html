@@ -152,6 +152,7 @@
         <div class="menu-card" onclick="showPage('fin_src')"><i>📢</i><span>ИСТОЧНИКИ<br>ТРАФИКА</span></div>
         <div class="menu-card" onclick="showPage('fin_daily')"><i>📅</i><span>ПРИБЫЛЬ<br>ПО ДНЯМ</span></div>
         <div class="menu-card" onclick="showPage('fin_monthly')"><i>📊</i><span>ПРИБЫЛЬ<br>ПО МЕСЯЦАМ</span></div>
+        <div class="menu-card" onclick="showPage('fin_geo')"><i>🌍</i><span>ГЕОГРАФИЯ<br>КЛИЕНТОВ</span></div>
     </div>
 
     <div id="fin_gen" class="report-page">
@@ -302,6 +303,20 @@
             <button class="apply-btn" onclick="runMonthlyReport()">ПОКАЗАТЬ ОТЧЕТ</button>
         </div>
         <div id="res_monthly"></div>
+    </div>
+
+    <div id="fin_geo" class="report-page">
+        <div class="nav-row">
+            <button class="back-btn" onclick="showMain()">
+                <span style="font-size: 1.4rem;">‹</span> НАЗАД
+            </button>
+            <div class="page-title">ГЕОГРАФИЯ КЛИЕНТОВ</div>
+        </div>
+        <div class="filter-box">
+            <span style="font-weight: 700;">Статистика по географии:</span>
+            <button class="apply-btn" onclick="runGeoReport()" style="margin-top: 15px;">ПОКАЗАТЬ ОТЧЕТ</button>
+        </div>
+        <div id="res_geo"></div>
     </div>
 
     <div class="close-app-btn" onclick="tg.close()">ЗАКРЫТЬ</div>
@@ -677,6 +692,76 @@
         document.getElementById('daily_month').value = currentMonth;
         document.getElementById('daily_year').value = currentYear;
         document.getElementById('monthly_year').value = currentYear;
+
+        // Функция отчета по географии
+        function runGeoReport() {
+            impact('heavy');
+            
+            const geoStats = {};
+            let localCount = 0; // Казань (местные)
+            let totalClients = 0;
+            
+            // Подсчитываем клиентов по географии
+            db.clients.forEach(client => {
+                totalClients++;
+                const countryCity = client.country_city || '';
+                
+                if (countryCity.trim()) {
+                    // Есть указание страны/города
+                    if (geoStats[countryCity]) {
+                        geoStats[countryCity]++;
+                    } else {
+                        geoStats[countryCity] = 1;
+                    }
+                } else {
+                    // Не указано - считаем местными (Казань)
+                    localCount++;
+                }
+            });
+            
+            // Сортируем по количеству клиентов
+            const sortedGeo = Object.entries(geoStats)
+                .sort((a, b) => b[1] - a[1]);
+            
+            // Формируем HTML
+            let html = '';
+            
+            // Сначала местные (Казань)
+            if (localCount > 0) {
+                const percent = ((localCount / totalClients) * 100).toFixed(1);
+                html += `
+                <div class="stat-row" style="flex-direction:column; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="label" style="font-size:1rem;"><b>🏠 Казань (местные)</b></span>
+                        <span style="font-weight: 800; color: #2ecc71; font-size: 1.3rem;">${localCount} (${percent}%)</span>
+                    </div>
+                </div>`;
+            }
+            
+            // Потом остальные города/страны
+            sortedGeo.forEach(([location, count]) => {
+                const percent = ((count / totalClients) * 100).toFixed(1);
+                html += `
+                <div class="stat-row" style="flex-direction:column; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="label" style="font-size:1rem;"><b>🌍 ${location}</b></span>
+                        <span style="font-weight: 800; color: #3498db; font-size: 1.3rem;">${count} (${percent}%)</span>
+                    </div>
+                </div>`;
+            });
+            
+            const summaryHtml = `
+                <div class="summary-grid">
+                    <div class="sum-card full">
+                        <span class="sum-label">ВСЕГО КЛИЕНТОВ</span>
+                        <span class="sum-val">${totalClients}</span>
+                    </div>
+                </div>
+                ${html || '<div style="text-align:center; padding:20px; color:#888">Нет данных по географии</div>'}
+            `;
+            
+            document.getElementById('res_geo').innerHTML = summaryHtml;
+        }
     </script>
 </body>
 </html>
