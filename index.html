@@ -195,16 +195,7 @@
                 return;
             }
             
-            // Если первая цифра 8 - заменяем на 7
-            if (digits.startsWith('8')) {
-                digits = '7' + digits.substring(1);
-            }
-            // Если первая цифра НЕ 7 - добавляем 7 в начало
-            else if (!digits.startsWith('7')) {
-                digits = '7' + digits;
-            }
-            
-            // Ограничиваем длину до 11 цифр (7 + 10 цифр номера)
+            // Ограничиваем длину до 11 цифр (любые цифры)
             digits = digits.substring(0, 11); 
             
             // Всегда показываем с +
@@ -241,16 +232,7 @@
             
             if (digits.length === 0) return;
             
-            // Если первая цифра 8 - заменяем на 7
-            if (digits.startsWith('8')) {
-                digits = '7' + digits.substring(1);
-            }
-            // Если первая цифра НЕ 7 - добавляем 7 в начало
-            else if (!digits.startsWith('7')) {
-                digits = '7' + digits;
-            }
-            
-            // Ограничиваем длину до 11 цифр
+            // Ограничиваем длину до 11 цифр (любые цифры)
             digits = digits.substring(0, 11);
             
             // Устанавливаем значение
