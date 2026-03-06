@@ -378,10 +378,10 @@
                 tg.showAlert("❌ Укажите телефон");
                 return;
             }
-            // Проверка корректности телефона (должен быть +7 и 10 цифр)
+            // Проверка корректности телефона (должен быть + и 11 цифр)
             const phoneDigits = d.phone.replace(/\D/g, '');
-            if (phoneDigits.length !== 11 || !phoneDigits.startsWith('7')) {
-                tg.showAlert("❌ Телефон введен некорректно. Должен быть формат +7XXXXXXXXXX (11 цифр)");
+            if (phoneDigits.length !== 11) {
+                tg.showAlert("❌ Телефон введен некорректно. Должен быть формат +XXXXXXXXXXX (11 цифр)");
                 return;
             }
             if (!d.parent_name) {
