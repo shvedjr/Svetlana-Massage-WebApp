@@ -272,9 +272,26 @@
             }
             
             // Показываем/скрываем блок ребёнка
-            const isAdult = selectedService.includes('взрослый') || selectedService === 'Консультация оффлайн';
-            childBlock.style.display = isAdult ? 'none' : 'block';
-            pLabel.innerText = isAdult ? 'ФИО Клиента' : 'Имя родителя';
+            // Для консультаций блок ребенка показываем, но делаем необязательным
+            const isAdult = selectedService.includes('взрослый');
+            const isConsultation = selectedService.includes('Консультация');
+            
+            if (isAdult) {
+                childBlock.style.display = 'none';
+                pLabel.innerText = 'ФИО Клиента';
+            } else if (isConsultation) {
+                childBlock.style.display = 'block';
+                pLabel.innerText = 'Имя родителя';
+                // Для консультаций данные ребенка необязательны
+                document.getElementById('c_name').removeAttribute('required');
+                document.getElementById('c_age').removeAttribute('required');
+            } else {
+                childBlock.style.display = 'block';
+                pLabel.innerText = 'Имя родителя';
+                // Для остальных детских услуг данные ребенка обязательны
+                document.getElementById('c_name').setAttribute('required', 'required');
+                document.getElementById('c_age').setAttribute('required', 'required');
+            }
         }
 
         function handleLocationChange() {
