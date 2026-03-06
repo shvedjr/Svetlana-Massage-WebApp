@@ -2149,6 +2149,11 @@
 
         // Обработчик для поля телефона в форме редактирования клиента
         document.getElementById('ec-phone').addEventListener('input', function (e) {
+            // Если значение уже начинается с +, не обрабатываем (это загрузка из БД)
+            if (e.target.value.startsWith('+') && e.inputType === undefined) {
+                return;
+            }
+            
             // Разрешаем только цифры, скобки (), тире -, пробелы и +
             let input = e.target.value.replace(/[^\d()\-\s+]/g, '');
             
