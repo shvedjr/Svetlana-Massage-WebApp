@@ -554,7 +554,10 @@
     </div>
 
     <div id="address-box" onclick="if(event.target === this) closeAllEditBoxes()">
-        <h4 style="margin-top:0; color: var(--dark); text-align: center;">📍 Детали доступа</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="margin:0; color: var(--dark);">📍 Детали доступа</h4>
+            <button onclick="closeAllEditBoxes()" style="background: none; border: none; font-size: 28px; color: var(--hint); cursor: pointer; padding: 0; line-height: 1;">×</button>
+        </div>
         <div id="address-details-content"></div>
         <button class="save-btn" style="background: var(--pink);" onclick="closeAllEditBoxes()">ПОНЯТНО</button>
     </div>
@@ -628,7 +631,10 @@
     -->
 
     <div id="datetime-edit-box" onclick="if(event.target === this) closeAllEditBoxes()">
-        <h4 style="margin-top:0; color: var(--dark); text-align: center;">📅 Изменить дату и время</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="margin:0; color: var(--dark);">📅 Изменить дату и время</h4>
+            <button onclick="closeAllEditBoxes()" style="background: none; border: none; font-size: 28px; color: var(--hint); cursor: pointer; padding: 0; line-height: 1;">×</button>
+        </div>
         <div class="box-label" style="margin-bottom:5px;">Дата визита</div>
         <input type="date" id="edit-visit-date" class="inp">
         <div class="box-label" style="margin-bottom:5px;">Время</div>
@@ -637,7 +643,10 @@
     </div>
 
     <div id="price-edit-box" onclick="if(event.target === this) closeAllEditBoxes()">
-        <h4 style="margin-top:0; color: var(--dark); text-align: center;">💰 Изменить стоимость сеанса</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="margin:0; color: var(--dark);">💰 Изменить стоимость сеанса</h4>
+            <button onclick="closeAllEditBoxes()" style="background: none; border: none; font-size: 28px; color: var(--hint); cursor: pointer; padding: 0; line-height: 1;">×</button>
+        </div>
         <div class="box-label" style="margin-bottom:5px;">Стоимость (₽)</div>
         <input type="number" id="edit-visit-price" class="inp" placeholder="Например: 2000" inputmode="numeric" required min="1">
         <button class="save-btn" onclick="saveVisitPrice()">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
@@ -2171,34 +2180,6 @@
             
             // Всегда показываем с +
             e.target.value = '+' + digits;
-        });
-
-        // Обработчик для закрытия модальных окон при клике вне их области
-        document.addEventListener('click', function(e) {
-            const overlay = document.getElementById('overlay');
-            if (overlay.style.display === 'block' && e.target === overlay) {
-                closeAllEditBoxes();
-            }
-        });
-
-        // Добавляем обработчик клика на сам overlay элемент
-        document.getElementById('overlay').addEventListener('click', function(e) {
-            // Закрываем только если клик был именно на overlay, а не на дочерних элементах
-            if (e.target === this) {
-                closeAllEditBoxes();
-            }
-        });
-
-        // Останавливаем всплытие событий от модальных окон
-        const modalBoxes = ['edit-box', 'total-edit-box', 'complaints-edit-box', 'client-edit-box', 
-                           'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box', 'price-edit-box'];
-        modalBoxes.forEach(boxId => {
-            const box = document.getElementById(boxId);
-            if (box) {
-                box.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
-            }
         });
 
         loadData();
