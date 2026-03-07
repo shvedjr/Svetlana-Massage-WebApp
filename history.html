@@ -611,6 +611,8 @@
         </div>
         <div class="box-label" style="margin-bottom:5px;">Заметка к адресу</div>
         <input type="text" id="ec-addr-comm" class="inp">
+        <div class="box-label" style="margin-bottom:5px;">Страна/Город</div>
+        <input type="text" id="ec-country-city" class="inp" placeholder="Например: Москва, Россия">
         <button class="save-btn" onclick="saveClient()">ОБНОВИТЬ ДАННЫЕ</button>
     </div>
 
@@ -1223,9 +1225,9 @@
                             <span class="addr-value">${c.address || '—'}</span>
                         </div>
                         
-                        ${c.country_city ? `<div class="info-box">
-                            <span class="box-label">🌍 Страна/Город</span>
-                            <span class="box-value">${c.country_city}</span>
+                        ${c.country_city ? `<div class="info-box addr-box" onclick='openClientEdit(${JSON.stringify(c).replace(/'/g, "&#39;")})' style="grid-column: 1 / -1;">
+                            <span class="box-label">🌍 Страна/Город (нажми для изменения)</span>
+                            <span class="addr-value">${c.country_city}</span>
                         </div>` : ''}
 
                         <div class="info-box b-gold">
@@ -1857,6 +1859,7 @@
             document.getElementById('ec-floor').value = c.floor || '';
             document.getElementById('ec-intercom').value = c.intercom || '';
             document.getElementById('ec-addr-comm').value = c.address_comment || '';
+            document.getElementById('ec-country-city').value = c.country_city || '';
             openEditBox('client-edit-box');
         }
 
@@ -2015,7 +2018,8 @@
                 entrance: document.getElementById('ec-entrance').value,
                 floor: document.getElementById('ec-floor').value,
                 intercom: document.getElementById('ec-intercom').value,
-                address_comment: document.getElementById('ec-addr-comm').value
+                address_comment: document.getElementById('ec-addr-comm').value,
+                country_city: document.getElementById('ec-country-city').value
             };
             
             // Обновляем данные клиента локально
@@ -2025,6 +2029,11 @@
                 currentClient.child_name = childName;
                 currentClient.child_age = childAge;
                 currentClient.address = address;
+                currentClient.entrance = document.getElementById('ec-entrance').value;
+                currentClient.floor = document.getElementById('ec-floor').value;
+                currentClient.intercom = document.getElementById('ec-intercom').value;
+                currentClient.address_comment = document.getElementById('ec-addr-comm').value;
+                currentClient.country_city = document.getElementById('ec-country-city').value;
                 currentClient.entrance = pendingChanges.clientProfile.entrance;
                 currentClient.floor = pendingChanges.clientProfile.floor;
                 currentClient.intercom = pendingChanges.clientProfile.intercom;
