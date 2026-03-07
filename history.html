@@ -2181,6 +2181,26 @@
             }
         });
 
+        // Добавляем обработчик клика на сам overlay элемент
+        document.getElementById('overlay').addEventListener('click', function(e) {
+            // Закрываем только если клик был именно на overlay, а не на дочерних элементах
+            if (e.target === this) {
+                closeAllEditBoxes();
+            }
+        });
+
+        // Останавливаем всплытие событий от модальных окон
+        const modalBoxes = ['edit-box', 'total-edit-box', 'complaints-edit-box', 'client-edit-box', 
+                           'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box', 'price-edit-box'];
+        modalBoxes.forEach(boxId => {
+            const box = document.getElementById(boxId);
+            if (box) {
+                box.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+
         loadData();
     </script>
 </body>
