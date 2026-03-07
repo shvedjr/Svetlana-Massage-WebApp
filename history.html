@@ -1222,6 +1222,11 @@
                             <span class="box-label">🏠 Адрес (нажми для деталей)</span>
                             <span class="addr-value">${c.address || '—'}</span>
                         </div>
+                        
+                        ${c.country_city ? `<div class="info-box">
+                            <span class="box-label">🌍 Страна/Город</span>
+                            <span class="box-value">${c.country_city}</span>
+                        </div>` : ''}
 
                         <div class="info-box b-gold">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
