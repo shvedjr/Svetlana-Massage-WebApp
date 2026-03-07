@@ -1695,7 +1695,18 @@
             document.getElementById('modal').style.display = 'flex';
         }
 
-        function openE(id, service, comm, res, date, status) { 
+        function openE(id, service, comm, res, date, status) {
+            // Проверяем, был ли клик на кнопках редактирования даты/цены
+            if (event && event.target) {
+                if (event.target.classList.contains('edit-datetime') || 
+                    event.target.classList.contains('edit-price') ||
+                    event.target.closest('.edit-datetime') || 
+                    event.target.closest('.edit-price')) {
+                    console.log('openE: Клик на кнопку редактирования, не открываем окно статуса');
+                    return;
+                }
+            }
+            
             curV = id; 
             curService = service;
             curVisitStatus = status || 'planned'; // СОХРАНЯЕМ ТЕКУЩИЙ СТАТУС
