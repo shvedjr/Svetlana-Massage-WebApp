@@ -553,7 +553,7 @@
         <button class="save-btn" style="background:var(--pink);" onclick="saveNewVisit()">ЗАПИСАТЬ</button>
     </div>
 
-    <div id="address-box">
+    <div id="address-box" onclick="if(event.target === this) closeAllEditBoxes()">
         <h4 style="margin-top:0; color: var(--dark); text-align: center;">📍 Детали доступа</h4>
         <div id="address-details-content"></div>
         <button class="save-btn" style="background: var(--pink);" onclick="closeAllEditBoxes()">ПОНЯТНО</button>
@@ -627,7 +627,7 @@
     </div>
     -->
 
-    <div id="datetime-edit-box">
+    <div id="datetime-edit-box" onclick="if(event.target === this) closeAllEditBoxes()">
         <h4 style="margin-top:0; color: var(--dark); text-align: center;">📅 Изменить дату и время</h4>
         <div class="box-label" style="margin-bottom:5px;">Дата визита</div>
         <input type="date" id="edit-visit-date" class="inp">
@@ -636,7 +636,7 @@
         <button class="save-btn" onclick="saveVisitDateTime()">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
     </div>
 
-    <div id="price-edit-box">
+    <div id="price-edit-box" onclick="if(event.target === this) closeAllEditBoxes()">
         <h4 style="margin-top:0; color: var(--dark); text-align: center;">💰 Изменить стоимость сеанса</h4>
         <div class="box-label" style="margin-bottom:5px;">Стоимость (₽)</div>
         <input type="number" id="edit-visit-price" class="inp" placeholder="Например: 2000" inputmode="numeric" required min="1">
