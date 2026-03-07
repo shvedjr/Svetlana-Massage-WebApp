@@ -1542,6 +1542,8 @@
                         new_time: newTime,
                         is_course: false
                     });
+                    
+                    closeAllEditBoxes();
                     return;
                 }
                 
@@ -1626,6 +1628,8 @@
                     is_course: true,
                     skip_weekends: skipWeekends
                 });
+                
+                closeAllEditBoxes();
                 return;
             }
             
@@ -1640,6 +1644,8 @@
                 new_time: newTime,
                 is_course: false
             });
+            
+            closeAllEditBoxes();
         }
 
         function editVisitPrice(visitId, currentPrice) {
