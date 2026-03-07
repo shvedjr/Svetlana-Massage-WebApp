@@ -1491,6 +1491,7 @@
         }
 
         function closeAllEditBoxes() {
+            console.log('closeAllEditBoxes() вызвана');
             document.getElementById('overlay').style.display = 'none';
             const boxes = ['edit-box', 'total-edit-box', 'complaints-edit-box', 'client-edit-box', 'pay-box', 'plan-box', 'address-box', 'visit-add-box', 'datetime-edit-box', 'price-edit-box'];
             boxes.forEach(id => document.getElementById(id).style.display = 'none');
@@ -1498,6 +1499,7 @@
 
         function closeOverlay() {
             // Закрываем overlay и все окна
+            console.log('closeOverlay() вызвана');
             closeAllEditBoxes();
         }
 
