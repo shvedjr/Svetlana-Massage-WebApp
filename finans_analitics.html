@@ -698,7 +698,7 @@
             impact('heavy');
             
             const geoStats = {};
-            let localCount = 0; // Казань (местные)
+            let unknownCount = 0; // Не указано
             let totalClients = 0;
             
             // Подсчитываем клиентов по географии
@@ -714,8 +714,8 @@
                         geoStats[countryCity] = 1;
                     }
                 } else {
-                    // Не указано - считаем местными (Казань)
-                    localCount++;
+                    // Не указано
+                    unknownCount++;
                 }
             });
             
@@ -726,19 +726,7 @@
             // Формируем HTML
             let html = '';
             
-            // Сначала местные (Казань)
-            if (localCount > 0) {
-                const percent = ((localCount / totalClients) * 100).toFixed(1);
-                html += `
-                <div class="stat-row" style="flex-direction:column; padding:15px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="label" style="font-size:1rem;"><b>🏠 Казань (местные)</b></span>
-                        <span style="font-weight: 800; color: #2ecc71; font-size: 1.3rem;">${localCount} (${percent}%)</span>
-                    </div>
-                </div>`;
-            }
-            
-            // Потом остальные города/страны
+            // Города/страны с указанием
             sortedGeo.forEach(([location, count]) => {
                 const percent = ((count / totalClients) * 100).toFixed(1);
                 html += `
@@ -749,6 +737,18 @@
                     </div>
                 </div>`;
             });
+            
+            // Не указано
+            if (unknownCount > 0) {
+                const percent = ((unknownCount / totalClients) * 100).toFixed(1);
+                html += `
+                <div class="stat-row" style="flex-direction:column; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="label" style="font-size:1rem; opacity:0.6;"><b>❓ Не указано</b></span>
+                        <span style="font-weight: 800; color: #95a5a6; font-size: 1.3rem;">${unknownCount} (${percent}%)</span>
+                    </div>
+                </div>`;
+            }
             
             const summaryHtml = `
                 <div class="summary-grid">
