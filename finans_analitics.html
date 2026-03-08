@@ -535,16 +535,46 @@
             impact('heavy');
             const {s, e} = getDates('type'); 
             const stats = {}; 
+            const courseTracking = {}; // Для отслеживания курсов: {clientId_courseNum: true}
+            
             db.visits.forEach(v => {
                 // Исключаем отмененные сеансы
                 if (v.status === 'Отменен') return;
                 
                 const d = parseDate(v.d); 
-                if (d >= s && d <= e) { 
-                    const type = v.s ? v.s.split(' ')[0] : 'Неизвестно'; 
-                    stats[type] = (stats[type] || 0) + 1; 
+                if (d >= s && d <= e) {
+                    const serviceName = v.s || 'Неизвестно';
+                    
+                    // Проверяем, является ли это курсом (формат: "Курс 1: 5/10")
+                    if (serviceName.startsWith('Курс')) {
+                        // Извлекаем номер курса и тип (детский/взрослый)
+                        const match = serviceName.match(/Курс (\d+):/);
+                        const courseNum = match ? match[1] : '1';
+                        
+                        // Определяем тип курса
+                        let courseType = 'Курс';
+                        if (serviceName.toLowerCase().includes('детский')) {
+                            courseType = 'Курс детский';
+                        } else if (serviceName.toLowerCase().includes('взрослый')) {
+                            courseType = 'Курс взрослый';
+                        }
+                        
+                        // Уникальный ключ для курса: clientId + номер курса
+                        const courseKey = `${v.i}_${courseNum}`;
+                        
+                        // Если этот курс еще не учтен, добавляем его
+                        if (!courseTracking[courseKey]) {
+                            courseTracking[courseKey] = true;
+                            stats[courseType] = (stats[courseType] || 0) + 1;
+                        }
+                    } else {
+                        // Для не-курсов считаем как обычно
+                        const type = serviceName.split(' ')[0];
+                        stats[type] = (stats[type] || 0) + 1;
+                    }
                 } 
             }); 
+            
             const html = Object.entries(stats)
                 .sort((a, b) => b[1] - a[1])
                 .map(([k, v]) => `<div class="stat-row"><span class="label">${k}</span><span class="val">${v} шт.</span></div>`).join(''); 
