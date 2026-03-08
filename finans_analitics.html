@@ -697,25 +697,68 @@
         function runGeoReport() {
             impact('heavy');
             
+            // Функция для определения города из адреса
+            function detectCityFromAddress(address) {
+                if (!address || !address.trim()) return null;
+                
+                const addr = address.trim();
+                
+                // Список известных городов (можно расширить)
+                const cities = [
+                    'Москва', 'Санкт-Петербург', 'Петербург', 'СПб',
+                    'Чебоксары', 'Новочебоксарск', 'Йошкар-Ола',
+                    'Нижний Новгород', 'Екатеринбург', 'Уфа', 'Самара',
+                    'Челябинск', 'Ростов-на-Дону', 'Омск', 'Красноярск',
+                    'Воронеж', 'Пермь', 'Волгоград', 'Краснодар', 'Саратов',
+                    'Тюмень', 'Тольятти', 'Ижевск', 'Барнаул', 'Ульяновск',
+                    'Иркутск', 'Хабаровск', 'Ярославль', 'Владивосток',
+                    'Махачкала', 'Томск', 'Оренбург', 'Кемерово', 'Новокузнецк',
+                    'Рязань', 'Астрахань', 'Набережные Челны', 'Пенза', 'Липецк'
+                ];
+                
+                // Проверяем, начинается ли адрес с названия города
+                for (const city of cities) {
+                    if (addr.toLowerCase().startsWith(city.toLowerCase())) {
+                        return city;
+                    }
+                    // Проверяем с "г." или "г "
+                    if (addr.toLowerCase().startsWith('г. ' + city.toLowerCase()) || 
+                        addr.toLowerCase().startsWith('г ' + city.toLowerCase())) {
+                        return city;
+                    }
+                }
+                
+                return null; // Город не определен
+            }
+            
             const geoStats = {};
-            let unknownCount = 0; // Не указано
             let totalClients = 0;
             
             // Подсчитываем клиентов по географии
             db.clients.forEach(client => {
                 totalClients++;
-                const countryCity = client.country_city || '';
                 
-                if (countryCity.trim()) {
-                    // Есть указание страны/города
-                    if (geoStats[countryCity]) {
-                        geoStats[countryCity]++;
-                    } else {
-                        geoStats[countryCity] = 1;
-                    }
+                let location = null;
+                
+                // 1. Если country_city заполнено - используем его
+                if (client.country_city && client.country_city.trim()) {
+                    location = client.country_city.trim();
                 } else {
-                    // Не указано
-                    unknownCount++;
+                    // 2. Анализируем адрес
+                    const cityFromAddress = detectCityFromAddress(client.address);
+                    if (cityFromAddress) {
+                        location = cityFromAddress;
+                    } else {
+                        // 3. По умолчанию - Казань
+                        location = 'Казань';
+                    }
+                }
+                
+                // Добавляем в статистику
+                if (geoStats[location]) {
+                    geoStats[location]++;
+                } else {
+                    geoStats[location] = 1;
                 }
             });
             
@@ -726,29 +769,20 @@
             // Формируем HTML
             let html = '';
             
-            // Города/страны с указанием
             sortedGeo.forEach(([location, count]) => {
                 const percent = ((count / totalClients) * 100).toFixed(1);
+                const isKazan = location === 'Казань';
+                const icon = isKazan ? '🏠' : '🌍';
+                const color = isKazan ? '#2ecc71' : '#3498db';
+                
                 html += `
                 <div class="stat-row" style="flex-direction:column; padding:15px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="label" style="font-size:1rem;"><b>🌍 ${location}</b></span>
-                        <span style="font-weight: 800; color: #3498db; font-size: 1.3rem;">${count} (${percent}%)</span>
+                        <span class="label" style="font-size:1rem;"><b>${icon} ${location}</b></span>
+                        <span style="font-weight: 800; color: ${color}; font-size: 1.3rem;">${count} (${percent}%)</span>
                     </div>
                 </div>`;
             });
-            
-            // Не указано
-            if (unknownCount > 0) {
-                const percent = ((unknownCount / totalClients) * 100).toFixed(1);
-                html += `
-                <div class="stat-row" style="flex-direction:column; padding:15px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="label" style="font-size:1rem; opacity:0.6;"><b>❓ Не указано</b></span>
-                        <span style="font-weight: 800; color: #95a5a6; font-size: 1.3rem;">${unknownCount} (${percent}%)</span>
-                    </div>
-                </div>`;
-            }
             
             const summaryHtml = `
                 <div class="summary-grid">
