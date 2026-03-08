@@ -535,7 +535,10 @@
             impact('heavy');
             const {s, e} = getDates('type'); 
             const stats = {}; 
-            db.visits.forEach(v => { 
+            db.visits.forEach(v => {
+                // Исключаем отмененные сеансы
+                if (v.status === 'Отменен') return;
+                
                 const d = parseDate(v.d); 
                 if (d >= s && d <= e) { 
                     const type = v.s ? v.s.split(' ')[0] : 'Неизвестно'; 
@@ -551,18 +554,31 @@
         function runSrcReport() { 
             impact('heavy');
             const {s, e} = getDates('src');
-            const stats = {}; 
-            db.clients.forEach(c => { 
-                const d = parseDate(c.d);
+            const stats = {};
+            const clientsInPeriod = new Set();
+            
+            // Находим всех клиентов, у которых есть сеансы (не отмененные) в выбранном диапазоне
+            db.visits.forEach(v => {
+                if (v.status === 'Отменен') return;
+                
+                const d = parseDate(v.d);
                 if (d >= s && d <= e) {
+                    clientsInPeriod.add(v.i); // v.i - это client_id
+                }
+            });
+            
+            // Считаем источники трафика для найденных клиентов
+            db.clients.forEach(c => {
+                if (clientsInPeriod.has(c.i)) {
                     const src = c.s || 'Не указано'; 
-                    stats[src] = (stats[src] || 0) + 1; 
-                } 
-            }); 
+                    stats[src] = (stats[src] || 0) + 1;
+                }
+            });
+            
             const html = Object.entries(stats)
                 .sort((a, b) => b[1] - a[1])
                 .map(([k, v]) => `<div class="stat-row"><span class="label">${k}</span><span class="val">${v} чел.</span></div>`).join(''); 
-            document.getElementById('res_src').innerHTML = html || 'За этот период новых клиентов нет'; 
+            document.getElementById('res_src').innerHTML = html || 'За этот период клиентов нет'; 
         }
 
         function runDailyReport() {
