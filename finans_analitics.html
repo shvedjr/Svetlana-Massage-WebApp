@@ -578,12 +578,25 @@
                 dailyStats[day] = 0;
             }
 
+            // Учитываем оплаты
             db.payments.forEach(p => {
                 const d = parseDate(p.d);
                 if (d.getFullYear() === year && d.getMonth() === month) {
                     const day = d.getDate();
                     dailyStats[day] += p.a;
                     totalMonth += p.a;
+                }
+            });
+
+            // Учитываем выполненные сеансы
+            db.visits.forEach(v => {
+                if (v.status === 'Выполнен' && v.price) {
+                    const d = parseDate(v.d);
+                    if (d.getFullYear() === year && d.getMonth() === month) {
+                        const day = d.getDate();
+                        dailyStats[day] += v.price;
+                        totalMonth += v.price;
+                    }
                 }
             });
 
@@ -629,12 +642,25 @@
                 monthlyStats[m] = 0;
             }
 
+            // Учитываем оплаты
             db.payments.forEach(p => {
                 const d = parseDate(p.d);
                 if (d.getFullYear() === year) {
                     const month = d.getMonth();
                     monthlyStats[month] += p.a;
                     totalYear += p.a;
+                }
+            });
+
+            // Учитываем выполненные сеансы
+            db.visits.forEach(v => {
+                if (v.status === 'Выполнен' && v.price) {
+                    const d = parseDate(v.d);
+                    if (d.getFullYear() === year) {
+                        const month = d.getMonth();
+                        monthlyStats[month] += v.price;
+                        totalYear += v.price;
+                    }
                 }
             });
 
