@@ -215,7 +215,7 @@
         <div class="filter-box">
             <span>Период:</span>
             <div class="quick-filters">
-                <div class="q-btn" onclick="setFastPeriod('type', 0)">Сегодня</div>
+                <div class="q-btn active" onclick="setAllTime('type')">Всего</div>
                 <div class="q-btn" onclick="setFastPeriod('type', 7)">7 дней</div>
                 <div class="q-btn" onclick="setFastPeriod('type', 30)">Месяц</div>
                 <div class="q-btn" onclick="setFastPeriod('type', 90)">Квартал</div>
@@ -240,7 +240,7 @@
         <div class="filter-box">
             <span>Период регистрации:</span>
             <div class="quick-filters">
-                <div class="q-btn" onclick="setFastPeriod('src', 0)">Сегодня</div>
+                <div class="q-btn active" onclick="setAllTime('src')">Всего</div>
                 <div class="q-btn" onclick="setFastPeriod('src', 7)">7 дней</div>
                 <div class="q-btn" onclick="setFastPeriod('src', 30)">Месяц</div>
                 <div class="q-btn" onclick="setFastPeriod('src', 90)">Квартал</div>
@@ -359,6 +359,19 @@
             start.setDate(end.getDate() - days);
             document.getElementById(prefix + '_start').value = start.toISOString().split('T')[0];
             document.getElementById(prefix + '_end').value = end.toISOString().split('T')[0];
+            // Убираем active со всех кнопок и добавляем на текущую
+            document.querySelectorAll(`#fin_${prefix} .q-btn`).forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function setAllTime(prefix) {
+            impact('medium');
+            // Устанавливаем очень широкий диапазон для "всего времени"
+            document.getElementById(prefix + '_start').value = '2020-01-01';
+            document.getElementById(prefix + '_end').value = '2099-12-31';
+            // Убираем active со всех кнопок и добавляем на текущую
+            document.querySelectorAll(`#fin_${prefix} .q-btn`).forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
         }
 
         // Загрузка данных
@@ -378,6 +391,13 @@
             document.getElementById('mainMenu').style.display = 'none';
             document.querySelectorAll('.report-page').forEach(p => p.style.display = 'none');
             document.getElementById(id).style.display = 'block';
+            
+            // Инициализация фильтра "Всего" для отчетов
+            if (id === 'fin_type') {
+                setAllTime('type');
+            } else if (id === 'fin_src') {
+                setAllTime('src');
+            }
         }
 
         function showMain() {
