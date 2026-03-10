@@ -401,22 +401,30 @@
             let total = 0, count = 0, dailyData = {};
             
             // Проверка данных
-            if (!db || !db.payments || !db.clients) {
+            if (!db || !db.visits || !db.clients) {
                 document.getElementById('res_gen').innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c"><h3>Ошибка загрузки данных</h3><p>Данные не загружены. Попробуйте закрыть и открыть аналитику заново.</p></div>';
                 return;
             }
             
-            const filteredPayments = db.payments.filter(p => {
-                const d = parseDate(p.d);
+            // Создаем карту клиентов для быстрого доступа
+            const clientMap = {};
+            db.clients.forEach(c => { clientMap[c.i] = c.n; });
+            
+            // Фильтруем выполненные сеансы в диапазоне дат
+            const completedVisits = db.visits.filter(v => {
+                if (v.status !== 'Выполнен') return false;
+                const d = parseDate(v.d);
                 return d >= s && d <= e;
             }).sort((a, b) => parseDate(a.d) - parseDate(b.d));
 
-            const htmlList = filteredPayments.slice().reverse().map(p => {
-                const pDate = parseDate(p.d);
-                total += p.a; count++;
-                const dateKey = pDate.toLocaleDateString();
-                dailyData[dateKey] = (dailyData[dateKey] || 0) + p.a;
-                return `<div class="transaction-item"><div class="tx-info"><span class="tx-name">${p.n}</span><span class="tx-date">${pDate.toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}</span></div><div class="tx-amount">+ ${p.a.toLocaleString()} ₽</div></div>`;
+            const htmlList = completedVisits.slice().reverse().map(v => {
+                const vDate = parseDate(v.d);
+                const price = v.price || 0;
+                total += price; count++;
+                const dateKey = vDate.toLocaleDateString();
+                dailyData[dateKey] = (dailyData[dateKey] || 0) + price;
+                const clientName = clientMap[v.i] || 'Неизвестный клиент';
+                return `<div class="transaction-item"><div class="tx-info"><span class="tx-name">${clientName}</span><span class="tx-date">${vDate.toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}</span></div><div class="tx-amount">+ ${price.toLocaleString()} ₽</div></div>`;
             }).join('');
 
             const avg = count > 0 ? Math.round(total / count) : 0;
@@ -434,7 +442,7 @@
                         <span class="sum-val">${avg.toLocaleString()} ₽</span>
                     </div>
                     <div class="sum-card">
-                        <span class="sum-label">ПЛАТЕЖЕЙ</span>
+                        <span class="sum-label">СЕАНСОВ</span>
                         <span class="sum-val">${count} шт.</span>
                     </div>
                 </div>
@@ -449,8 +457,8 @@
                     <div class="total-row" style="margin-bottom:0; color:#2ecc71"><span>Прибыль:</span><span>${totalEarnedAllTime.toLocaleString()} ₽</span></div>
                 </div>
 
-                <h3 style="font-size:1rem; margin:20px 0 10px 5px">История поступлений</h3>
-                ${htmlList || '<div style="text-align:center; padding:20px; color:#888">Оплат нет</div>'}
+                <h3 style="font-size:1rem; margin:20px 0 10px 5px">История выполненных сеансов</h3>
+                ${htmlList || '<div style="text-align:center; padding:20px; color:#888">Выполненных сеансов нет</div>'}
             `;
             
             document.getElementById('res_gen').innerHTML = summaryHtml;
