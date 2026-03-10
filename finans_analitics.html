@@ -889,10 +889,10 @@
                 const color = isKazan ? '#2ecc71' : '#3498db';
                 
                 html += `
-                <div class="stat-row" style="flex-direction:column; padding:15px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="stat-row" style="padding:15px;">
+                    <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
                         <span class="label" style="font-size:1rem;"><b>${icon} ${location}</b></span>
-                        <span style="font-weight: 800; color: ${color}; font-size: 1.3rem;">${count} (${percent}%)</span>
+                        <span style="font-weight: 800; color: ${color}; font-size: 1.3rem; white-space: nowrap;">${count} (${percent}%)</span>
                     </div>
                 </div>`;
             });
