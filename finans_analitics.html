@@ -400,6 +400,12 @@
             const {s, e} = getDates('gen');
             let total = 0, count = 0, dailyData = {};
             
+            // Проверка данных
+            if (!db || !db.payments || !db.clients) {
+                document.getElementById('res_gen').innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c"><h3>Ошибка загрузки данных</h3><p>Данные не загружены. Попробуйте закрыть и открыть аналитику заново.</p></div>';
+                return;
+            }
+            
             const filteredPayments = db.payments.filter(p => {
                 const d = parseDate(p.d);
                 return d >= s && d <= e;
