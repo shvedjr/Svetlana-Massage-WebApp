@@ -12,6 +12,7 @@
         :root {
             --bg: var(--tg-theme-bg-color, #f0f2f5);
             --accent: #ff758c;
+            --pink: #f2bac9;
             --accent-2: #ff7eb3;
             --dark: var(--tg-theme-text-color, #2d3436);
             --glass: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.9));
@@ -87,13 +88,13 @@
         .quick-filters { display: flex; gap: 6px; margin-top: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .q-btn { 
             background: var(--bg); border: 1px solid rgba(128,128,128,0.2); padding: 6px 10px; 
-            border-radius: 10px; font-size: 1rem; font-weight: 600; color: var(--dark);
+            border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--dark);
             cursor: pointer; transition: all 0.2s ease;
         }
         .q-btn.active {
-            background: var(--pink);
-            color: white;
-            border-color: var(--pink);
+            background: var(--pink) !important;
+            color: white !important;
+            border-color: var(--pink) !important;
         }
 
         .date-row { display: flex; gap: 10px; margin-top: 12px; }
