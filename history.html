@@ -861,7 +861,10 @@
         
         function getCompletedCourses(client) {
             // Подсчитываем завершенные курсы
-            // Курс = 10 выполненных сеансов в течение 30 дней (кроме консультаций)
+            // Курс 10 = 10 выполненных сеансов в течение 30 дней
+            // Курс 5 = 5 выполненных сеансов в течение 30 дней
+            // (кроме консультаций)
+            
             let allVisits = client.visits.filter(v => 
                 v.service && !v.service.includes('Консультация') && v.status === 'Выполнен'
             );
@@ -873,16 +876,51 @@
             let courseNumber = 1;
             let usedVisitIds = new Set();
             
-            // Проходим по всем визитам и ищем группы из 10 сеансов в пределах 30 дней
+            // Проходим по всем визитам и ищем группы курсов
             for (let i = 0; i < allVisits.length; i++) {
                 if (usedVisitIds.has(i)) continue;
+                
+                let visit = allVisits[i];
+                let serviceName = visit.service || '';
+                
+                // Определяем тип курса по названию услуги
+                let requiredSessions = 1; // По умолчанию для разовых
+                let isCourse = serviceName.includes('Курс') || serviceName.includes('курс');
+                
+                if (isCourse) {
+                    if (serviceName.includes('Курс 5') || serviceName.includes('курс 5')) {
+                        requiredSessions = 5;
+                    } else if (serviceName.includes('Курс 10') || serviceName.includes('курс 10')) {
+                        requiredSessions = 10;
+                    } else {
+                        // Старые записи без номера - считаем как Курс 10
+                        requiredSessions = 10;
+                    }
+                } else {
+                    // Не курс - пропускаем
+                    continue;
+                }
                 
                 let courseGroup = [i];
                 let startDate = new Date(allVisits[i].date);
                 
-                // Ищем следующие 9 сеансов в пределах 30 дней от первого
-                for (let j = i + 1; j < allVisits.length && courseGroup.length < 10; j++) {
+                // Ищем следующие сеансы того же типа курса в пределах 30 дней
+                for (let j = i + 1; j < allVisits.length && courseGroup.length < requiredSessions; j++) {
                     if (usedVisitIds.has(j)) continue;
+                    
+                    let nextVisit = allVisits[j];
+                    let nextService = nextVisit.service || '';
+                    
+                    // Проверяем, что это тот же тип курса
+                    let sameServiceType = false;
+                    if (requiredSessions === 5) {
+                        sameServiceType = nextService.includes('Курс 5') || nextService.includes('курс 5');
+                    } else if (requiredSessions === 10) {
+                        sameServiceType = nextService.includes('Курс 10') || nextService.includes('курс 10') || 
+                                         (nextService.includes('Курс') && !nextService.includes('Курс 5'));
+                    }
+                    
+                    if (!sameServiceType) continue;
                     
                     let currentDate = new Date(allVisits[j].date);
                     let daysDiff = (currentDate - startDate) / (1000 * 60 * 60 * 24);
@@ -892,8 +930,8 @@
                     }
                 }
                 
-                // Если нашли 10 сеансов в пределах 30 дней - это курс
-                if (courseGroup.length === 10) {
+                // Если нашли нужное количество сеансов в пределах 30 дней - это завершенный курс
+                if (courseGroup.length === requiredSessions) {
                     completedCourses.push(courseNumber);
                     courseNumber++;
                     // Помечаем эти визиты как использованные

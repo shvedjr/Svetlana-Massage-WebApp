@@ -581,7 +581,7 @@
             impact('heavy');
             const {s, e} = getDates('type'); 
             const stats = {}; 
-            const courseTracking = {}; // Для отслеживания курсов: {clientId_courseNum: true}
+            const courseTracking = {}; // Для отслеживания курсов: {clientId_serviceType: [visitIds]}
             
             db.visits.forEach(v => {
                 // Исключаем отмененные сеансы
@@ -591,27 +591,56 @@
                 if (d >= s && d <= e) {
                     const serviceName = v.s || 'Неизвестно';
                     
-                    // Проверяем, является ли это курсом (формат: "Курс 1: 5/10")
-                    if (serviceName.startsWith('Курс')) {
-                        // Извлекаем номер курса и тип (детский/взрослый)
-                        const match = serviceName.match(/Курс (\d+):/);
-                        const courseNum = match ? match[1] : '1';
-                        
-                        // Определяем тип курса
+                    // Проверяем, является ли это курсом
+                    if (serviceName.includes('Курс') || serviceName.includes('курс')) {
+                        // Определяем тип курса и количество сеансов
                         let courseType = 'Курс';
-                        if (serviceName.toLowerCase().includes('детский')) {
-                            courseType = 'Курс детский';
-                        } else if (serviceName.toLowerCase().includes('взрослый')) {
-                            courseType = 'Курс взрослый';
+                        let requiredSessions = 10; // По умолчанию
+                        
+                        if (serviceName.includes('Курс 5') || serviceName.includes('курс 5')) {
+                            requiredSessions = 5;
+                            if (serviceName.toLowerCase().includes('детский')) {
+                                courseType = 'Курс 5 детский';
+                            } else if (serviceName.toLowerCase().includes('взрослый')) {
+                                courseType = 'Курс 5 взрослый';
+                            } else {
+                                courseType = 'Курс 5';
+                            }
+                        } else if (serviceName.includes('Курс 10') || serviceName.includes('курс 10')) {
+                            requiredSessions = 10;
+                            if (serviceName.toLowerCase().includes('детский')) {
+                                courseType = 'Курс 10 детский';
+                            } else if (serviceName.toLowerCase().includes('взрослый')) {
+                                courseType = 'Курс 10 взрослый';
+                            } else {
+                                courseType = 'Курс 10';
+                            }
+                        } else {
+                            // Старые записи без номера - считаем как Курс 10
+                            requiredSessions = 10;
+                            if (serviceName.toLowerCase().includes('детский')) {
+                                courseType = 'Курс 10 детский';
+                            } else if (serviceName.toLowerCase().includes('взрослый')) {
+                                courseType = 'Курс 10 взрослый';
+                            }
                         }
                         
-                        // Уникальный ключ для курса: clientId + номер курса
-                        const courseKey = `${v.i}_${courseNum}`;
+                        // Уникальный ключ для курса: clientId + тип курса
+                        const courseKey = `${v.i}_${courseType}`;
                         
-                        // Если этот курс еще не учтен, добавляем его
+                        // Инициализируем массив визитов для этого курса
                         if (!courseTracking[courseKey]) {
-                            courseTracking[courseKey] = true;
+                            courseTracking[courseKey] = [];
+                        }
+                        
+                        // Добавляем визит в группу
+                        courseTracking[courseKey].push(v);
+                        
+                        // Если набрали нужное количество сеансов - считаем как 1 курс
+                        if (courseTracking[courseKey].length === requiredSessions) {
                             stats[courseType] = (stats[courseType] || 0) + 1;
+                            // Сбрасываем счетчик для следующего курса
+                            courseTracking[courseKey] = [];
                         }
                     } else {
                         // Для не-курсов считаем как обычно
